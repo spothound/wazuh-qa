@@ -14,6 +14,9 @@ def parse_arguments():
     parser.add_argument('-s', action='store', dest='size',
                         help='Size for rotation [MB]')
 
+    parser.add_argument('-i', action='store', dest='interval',
+                        help='Interval for rotation [s]')
+
     parser.add_argument('-n', action='store', dest='n',
                         help='Number of log rotations per format to wait')
 
@@ -24,7 +27,8 @@ def parse_arguments():
                         help='Compress rotated logs')
 
     results = parser.parse_args()
-    print('Size for rotation     =', results.size)
+    print('Size for rotation [MB]   =', results.size)
+    print('Time for rotation [s]   =', results.size)
     print('Nº log rotations   =', results.n)
     print('Max rotate files   =', results.rotate)
     print('Compress rotate files   =', results.compress)
@@ -204,7 +208,7 @@ def configure_wazuh(results, kind):
     max_size = ET.SubElement(log_rotation, 'max_size')
     max_size.text = "{}M".format(results.size)
     interval = ET.SubElement(log_rotation, 'interval')
-    log_rotation.remove(interval)
+    interval.text = "{}s".format(results.interval)
     compress = ET.SubElement(log_rotation, 'compress')
     if int(results.compress) >= 1:
         compress.text = "yes"
@@ -263,16 +267,23 @@ if __name__ == "__main__":
 
     # Check ossec logs
     print("Checking {} log rotations for each log type...".format(results.n))
+
+    os.system('echo "" > /var/ossec/logs/ossec.log')
+    os.system('echo "" > /var/ossec/logs/ossec.json')
+
     print("Checking rotation files in '{}'".format(ossec_logs_path))
     ok = check_size_rotation(n, ossec_logs_path, "logs", r, size, c)
     show_test_result("OSSEC", ok)
+
+    os.system('echo "" > {}/alerts.json'.format(alerts_logs_path))
+    os.system('echo "" > {}/alerts.log'.format(alerts_logs_path))
 
     print("Checking rotation files in '{}'".format(alerts_logs_path))
     ok = check_size_rotation(n, alerts_logs_path, "alerts", r, size, c)
     show_test_result("ALERTS", ok)
 
-    os.system('touch {}/archives.json'.format(archives_logs_path))
-    os.system('touch {}/archives.log'.format(archives_logs_path))
+    os.system('echo "" > {}/archives.json'.format(archives_logs_path))
+    os.system('echo "" > {}/archives.log'.format(archives_logs_path))
 
     print("Checking rotation files in '{}'".format(archives_logs_path))
     ok = check_size_rotation(n, archives_logs_path, "archive", r, size, c)
