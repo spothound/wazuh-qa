@@ -50,7 +50,7 @@ def assign_filename(kind, day, index, ext, compress):
 
     return file_name
 
-def check_file(folder, file_name, file_name_prev, max_rotation, index):
+def check_file(folder, file_name, file_name_prev, max_rotation, index, compress):
     # If a maximum number of rotated logs is set, check the file has been deleted
     if max_rotation >= 1 and index >= 0:
         file_path = "{}/{}".format(folder, file_name_prev)
@@ -64,7 +64,14 @@ def check_file(folder, file_name, file_name_prev, max_rotation, index):
         print('# {0}'.format(e))
         return False
 
-    print("{}: OK".format(file_path))
+    # Check that the compressed file is not corrupted
+    if compress == 1:
+        value = os.system('gzip -t -v {}'.format(file_path))
+        if value != 0:
+            print("Compressed file {} is corrupted".format(file_path))
+            return False
+    else :
+        print("{}: OK".format(file_path))
 
 def check_rotation_files(date, path, kind, index, max_rotation, compress):
     month = date.date().month
@@ -88,12 +95,12 @@ def check_rotation_files(date, path, kind, index, max_rotation, compress):
     # Check rotated files are created
     # Log format
 
-    check_file(folder, file_name_log, file_name_prev, max_rotation, index_2)
+    check_file(folder, file_name_log, file_name_prev, max_rotation, index_2, compress)
 
     # JSON format
     # Check previous rotate file doesn't exists
 
-    check_file(folder, file_name_json, file_name_json_prev, max_rotation, index_2)
+    check_file(folder, file_name_json, file_name_json_prev, max_rotation, index_2, compress)
 
     return True
 
@@ -263,6 +270,9 @@ if __name__ == "__main__":
     print("Checking rotation files in '{}'".format(alerts_logs_path))
     ok = check_size_rotation(n, alerts_logs_path, "alerts", r, size, c)
     show_test_result("ALERTS", ok)
+
+    os.system('touch {}/archives.json'.format(archives_logs_path))
+    os.system('touch {}/archives.log'.format(archives_logs_path))
 
     print("Checking rotation files in '{}'".format(archives_logs_path))
     ok = check_size_rotation(n, archives_logs_path, "archive", r, size, c)
