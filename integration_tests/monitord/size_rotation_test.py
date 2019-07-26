@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # July 23, 2019
 
-import os, time, datetime, calendar, sys, argparse
+import os, time, datetime, calendar, sys, argparse, fnmatch
 import xml.etree.ElementTree as ET
 
 ossec_logs_path = "/var/ossec/logs/ossec"
@@ -97,6 +97,24 @@ def check_rotation_files(date, path, kind, index, max_rotation, compress):
 
     return True
 
+def one_type_changed(folder_diff, compress):
+    files_changed = len(folder_diff)
+
+    if compress == 1:
+        pattern_log = '*.log.gz'
+        pattern_json = '*.json.gz'
+        if files_changed == len(fnmatch.filter(folder_diff, pattern_log)) or files_changed == len(fnmatch.filter(folder_diff, pattern_json)):
+            return 1
+        else:
+            return 0
+    else:
+        pattern_log = '*.log'
+        pattern_json = '*.json'
+        if files_changed == len(fnmatch.filter(folder_diff, pattern_log)) or files_changed == len(fnmatch.filter(folder_diff, pattern_json)):
+            return 1
+        else:
+            return 0
+
 def check_size_rotation(n, path, kind, max_rotation, max_size, compress):
 
     index = 0
@@ -142,8 +160,13 @@ def check_size_rotation(n, path, kind, max_rotation, max_size, compress):
         size_log = os.stat(log_path).st_size
         size_json = os.stat(json_path).st_size
 
+        # Check what files changed in the folder
+        folder_diff = list(set(p_dir).symmetric_difference(set(c_dir)))
+        # Check if only one format has changed
+        otc = one_type_changed(folder_diff, compress)
+
         # A rotation file has appeared (json and log)
-        if len(list(set(p_dir).symmetric_difference(set(c_dir)))) > 2 and len(list(set(p_dir).symmetric_difference(set(c_dir)))) % 2 == 0:
+        if len(folder_diff) >= 2 and otc == 0 and len(list(set(p_dir).symmetric_difference(set(c_dir)))) % 2 == 0:
             if act_rotation > max_files:
                 print("Maximum number of rotated logs has been surpassed in {}".format(path))
                 return False
@@ -157,7 +180,7 @@ def check_size_rotation(n, path, kind, max_rotation, max_size, compress):
             p_dir = c_dir
 
         if size_log > max_size or size_json > max_size:
-            print("The size of '{}' is {} or {} that's above the specified limit in the configuration which is {}".format(kind, size_log, size_json, max_size))
+            print("The size of '{}' is {} (.log) or {} (.json) that's above the specified limit in the configuration which is {}".format(kind, size_log, size_json, max_size))
 
         time.sleep(3)
 
