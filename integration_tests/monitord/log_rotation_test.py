@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # July 23, 2019
 
-import os, time, datetime, calendar, sys, argparse, fnmatch
+import os, time, datetime, calendar, sys, argparse, fnmatch, subprocess
 import xml.etree.ElementTree as ET
 
 ossec_logs_path = "/var/ossec/logs/ossec"
@@ -26,6 +26,9 @@ def parse_arguments():
     parser.add_argument('-c', action='store', dest='compress',
                         help='Compress rotated logs')
 
+    parser.add_argument('-f', action='store', dest='fill',
+                        help='Fill different logs for size rotation')
+
     results = parser.parse_args()
 
     # Check if some option is not set and set its default value
@@ -40,12 +43,15 @@ def parse_arguments():
         results.rotate = str(3)
     if results.compress == None:
         results.compress = str(0)
+    if results.fill == None:
+        results.fill = 0
 
     print('Size for rotation [MB]   =', results.size)
     print('Time for rotation [s]   =', results.interval)
     print('Nº log rotations   =', results.n)
     print('Max rotate files   =', results.rotate)
     print('Compress rotate files   =', results.compress)
+    print('Fill logs with text   =', results.fill)
     return results
 
 def assign_filename(kind, day, index, ext, compress):
@@ -250,7 +256,7 @@ def clean_stop_wazuh():
 
 def clean_start_wazuh():
     # Comment monitord internal options, clean rotated logs if exist and restart manager
-    os.system('cp internal_options_size.conf /var/ossec/etc/internal_options.conf')
+    os.system('cp internal_options_rotation.conf /var/ossec/etc/internal_options.conf')
     os.system('rm -rf /var/ossec/logs/ossec/*')
     os.system('rm -rf /var/ossec/logs/alerts/*/')
     os.system('rm -rf /var/ossec/logs/archives/*/')
@@ -286,20 +292,34 @@ if __name__ == "__main__":
     os.system('echo "" > /var/ossec/logs/ossec.json')
 
     print("Checking rotation files in '{}'".format(ossec_logs_path))
+
+    if int(results.fill) == 1:
+        pid = subprocess.Popen(["./inject_log.sh", "logs"]).pid
     ok = check_size_rotation(n, ossec_logs_path, "logs", r, size, c)
     show_test_result("OSSEC", ok)
 
+    if int(results.fill) == 1:
+        os.system('pkill -f inject_log')
     clean_start_wazuh()
 
     print("Checking rotation files in '{}'".format(alerts_logs_path))
+    if int(results.fill) == 1:
+        pid = subprocess.Popen(["./inject_log.sh", "alerts"]).pid
     ok = check_size_rotation(n, alerts_logs_path, "alerts", r, size, c)
     show_test_result("ALERTS", ok)
 
+    if int(results.fill) == 1:
+        os.system('pkill -f inject_log')
     clean_start_wazuh()
 
     print("Checking rotation files in '{}'".format(archives_logs_path))
+    if int(results.fill) == 1:
+        pid = subprocess.Popen(["./inject_log.sh", "archives"]).pid
     ok = check_size_rotation(n, archives_logs_path, "archive", r, size, c)
     show_test_result("ARCHIVES", ok)
+
+    if int(results.fill) == 1:
+        os.system('pkill -f inject_log')
 
     print("Stopping Wazuh and cleaning rotated logs...")
     clean_stop_wazuh()
