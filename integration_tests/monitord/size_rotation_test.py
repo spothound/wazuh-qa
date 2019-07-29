@@ -12,23 +12,37 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-s', action='store', dest='size',
-                        help='Size for rotation [MB]')
+                        help='Size for rotation [MB]', type=int, metavar='MB')
 
     parser.add_argument('-i', action='store', dest='interval',
-                        help='Interval for rotation [s]')
+                        help='Interval for rotation [s]', type=int, metavar='s')
 
     parser.add_argument('-n', action='store', dest='n',
-                        help='Number of log rotations per format to wait')
+                        help='Number of log rotations per format to wait', type=int)
 
     parser.add_argument('-r', action='store', dest='rotate',
-                        help='Maximum number of permitted rotations in folder')
+                        help='Maximum number of permitted rotations in folder' , type=int)
 
     parser.add_argument('-c', action='store', dest='compress',
                         help='Compress rotated logs')
 
     results = parser.parse_args()
+
+    # Check if some option is not set and set its default value
+
+    if results.size == None:
+        results.size = str(1)
+    if results.interval == None:
+        results.interval = str(5)
+    if results.n == None:
+        results.n = str(5)
+    if results.rotate == None:
+        results.rotate = str(3)
+    if results.compress == None:
+        results.compress = str(0)
+
     print('Size for rotation [MB]   =', results.size)
-    print('Time for rotation [s]   =', results.size)
+    print('Time for rotation [s]   =', results.interval)
     print('Nº log rotations   =', results.n)
     print('Max rotate files   =', results.rotate)
     print('Compress rotate files   =', results.compress)
@@ -221,9 +235,9 @@ def configure_wazuh(results, kind):
 
 def show_test_result(kind, ok):
     if ok == 1:
-        print("{} LOG SIZE ROTATION TEST... OK".format(kind))
+        print("{} LOG ROTATION TEST... OK".format(kind))
     else:
-        print("{} LOG SIZE ROTATION TEST... FAILED".format(kind))
+        print("{} LOG ROTATION TEST... FAILED".format(kind))
 
 def clean_stop_wazuh():
     # Stop Wazuh, clean generated rotated logs and restore old ossec.conf
@@ -246,7 +260,7 @@ if __name__ == "__main__":
 
     results = parse_arguments()
 
-    print("Starting size log rotation test...")
+    print("Starting log rotation test...")
 
     # Configure Wazuh
     os.system('systemctl stop wazuh-manager')
@@ -275,15 +289,13 @@ if __name__ == "__main__":
     ok = check_size_rotation(n, ossec_logs_path, "logs", r, size, c)
     show_test_result("OSSEC", ok)
 
-    os.system('echo "" > {}/alerts.json'.format(alerts_logs_path))
-    os.system('echo "" > {}/alerts.log'.format(alerts_logs_path))
+    clean_start_wazuh()
 
     print("Checking rotation files in '{}'".format(alerts_logs_path))
     ok = check_size_rotation(n, alerts_logs_path, "alerts", r, size, c)
     show_test_result("ALERTS", ok)
 
-    os.system('echo "" > {}/archives.json'.format(archives_logs_path))
-    os.system('echo "" > {}/archives.log'.format(archives_logs_path))
+    clean_start_wazuh()
 
     print("Checking rotation files in '{}'".format(archives_logs_path))
     ok = check_size_rotation(n, archives_logs_path, "archive", r, size, c)
