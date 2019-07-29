@@ -56,6 +56,8 @@ def parse_arguments():
 
 def assign_filename(kind, day, index, ext, compress):
     file_name = ""
+    if day < 10:
+        day = "0{}".format(day)
     if index == 0:
         file_name = "ossec-{}-{}.{}".format(kind, day, ext)
     elif index > 0:
