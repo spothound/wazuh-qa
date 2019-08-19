@@ -3,10 +3,11 @@
 
 from socket import socket, AF_UNIX, SOCK_STREAM
 from struct import pack, unpack
-from random import choice, randint, randrange
+from random import choice, randint, randrange, choice
 from string import ascii_lowercase
 from os import listdir, unlink
 import json
+from hashlib import sha1
 from testsuite import *
 
 def random_string(length=32):
@@ -14,10 +15,6 @@ def random_string(length=32):
 
 
 def random_fim():
-    block0 = randrange(0, 100000)
-    block1 = block0 // 2209
-    block2 = block1 // 47
-
     return {
         'file': random_string(),
         'type': choice(('file', 'registry')),
@@ -35,7 +32,6 @@ def random_fim():
         'attrs': randint(0, 1000000000),
         'symbolic_path': random_string(8),
         'checksum': random_string(16),
-        'blocks': (block0, block1, block2)
     }
 
 class Database:
@@ -76,8 +72,8 @@ class Database:
         self.send("agent {0} syscheck save2 {1}".format(self.id, json.dumps(data)))
         return self.recv()
 
-    def make_integrity(self):
-        self.send("agent {0} syscheck make_integrity ".format(self.id))
+    def fim_range_checksum(self, begin, end, checksum):
+        self.send("agent {0} syscheck range_checksum {1}".format(self.id, json.dumps({'begin': begin, 'end': end, 'checksum': checksum})))
         return self.recv()
 
     def remove(self):
@@ -97,7 +93,7 @@ def test_connect():
     '''Test connection to Wazuh DB'''
 
     try:
-        with Database() as db:
+        with Database():
             pass
     except Exception as e:
         print('# {0}'.format(e))
@@ -132,13 +128,12 @@ def test_fim(databases, queries):
     return True
 
 
-def test_fim_insert(queries):
+def test_fim_insert(files):
     '''Insert files into agent 001 database'''
 
     try:
         with Database('001') as db:
-            for _ in range(queries):
-                fim = random_fim()
+            for fim in files:
                 ans = db.save2(fim)
 
                 if ans != "ok":
@@ -151,15 +146,52 @@ def test_fim_insert(queries):
     return True
 
 
-def test_fim_make_integrity():
-    '''Make a FIM database integrity blockset'''
+def test_fim_range_checksum_ok(files):
+    '''Test a FIM entry range checksum'''
+
+    fim = choice(files)
+    checksum = sha1(fim['checksum'].encode()).hexdigest()
 
     try:
         with Database('001') as db:
-            ans = db.make_integrity()
+            ans = db.fim_range_checksum(fim['file'], fim['file'], checksum)
 
-            if not ans.startswith("ok"):
-                raise Exception("Cannot make integrity: {0}".format(ans))
+            if ans != ("ok "):
+                raise Exception("Checksum issue: {0}".format(ans))
+
+    except Exception as e:
+        print('# {0}'.format(e))
+        return False
+
+    return True
+
+
+def test_fim_range_checksum_fail(files):
+    '''Test a FIM entry range checksum'''
+
+    try:
+        with Database('001') as db:
+            ans = db.fim_range_checksum(files[0]['file'], files[-1]['file'], 'fakechecksum')
+
+            if ans != ("ok checksum_fail"):
+                raise Exception("Checksum issue: {0}".format(ans))
+
+    except Exception as e:
+        print('# {0}'.format(e))
+        return False
+
+    return True
+
+
+def test_fim_range_empty():
+    '''Test a FIM entry range checksum'''
+
+    try:
+        with Database('001') as db:
+            ans = db.fim_range_checksum('a', 'aa', 'fakechecksum')
+
+            if ans != ("ok no_data"):
+                raise Exception("Checksum issue: {0}".format(ans))
 
     except Exception as e:
         print('# {0}'.format(e))
@@ -237,15 +269,18 @@ def teardown():
 
 if __name__ == "__main__":
     test = TestSuite()
+    files = [random_fim() for _ in range(1000)]
 
     test.append("Connect to Wazuh DB", test_connect())
     test.append("Run 50 FIM queries to 500 agents", test_fim(500, 50))
     test.append("Remove 1000 databases individually", test_remove_individual(1000))
     test.append("Remove 1000 databases", test_remove_multiple(1000))
     test.append("Remove 5000 databases", test_remove_multiple(5000), expected=False)
-    test.append("Insert 1000 FIM files", test_fim_insert(1000))
+    test.append("Insert 1000 FIM files", test_fim_insert(files))
     test.append("Commit database", test_commit())
-    test.append("Create a FIM database integrity blockset", test_fim_make_integrity())
+    test.append("Query a FIM entry range checksum expecting match", test_fim_range_checksum_ok(files))
+    test.append("Query a FIM entry range checksum expecting failure", test_fim_range_checksum_fail(files))
+    test.append("Query a FIM entry range checksum expecting no data", test_fim_range_empty())
 
     print(test)
     teardown()
