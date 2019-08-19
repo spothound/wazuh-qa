@@ -88,6 +88,10 @@ class Database:
         self.send("wazuhdb remove {0}".format(' '.join(agents)))
         return self.recv()
 
+    def commit(self):
+        self.send("agent {0} commit".format(self.id))
+        return self.recv()
+
 
 def test_connect():
     '''Test connection to Wazuh DB'''
@@ -133,7 +137,7 @@ def test_fim_insert(queries):
 
     try:
         with Database('001') as db:
-            for _ in range(1, queries):
+            for _ in range(queries):
                 fim = random_fim()
                 ans = db.save2(fim)
 
@@ -182,6 +186,7 @@ def test_remove_individual(n):
 
     return True
 
+
 def test_remove_multiple(n):
     '''Remove multiple databases'''
 
@@ -199,6 +204,24 @@ def test_remove_multiple(n):
         return False
 
     return True
+
+
+def test_commit():
+    '''Commit agent 001 database'''
+
+    try:
+        with Database('001') as db:
+            ans = db.commit()
+
+            if ans != ("ok"):
+                raise Exception("Cannot commit: {1}".format(ans))
+
+    except Exception as e:
+        print('# {0}'.format(e))
+        return False
+
+    return True
+
 
 def teardown():
     BLACKLIST = ('.template.db', '000.db', '000.db-shm', '000.db-wal', 'wdb')
@@ -221,6 +244,7 @@ if __name__ == "__main__":
     test.append("Remove 1000 databases", test_remove_multiple(1000))
     test.append("Remove 5000 databases", test_remove_multiple(5000), expected=False)
     test.append("Insert 1000 FIM files", test_fim_insert(1000))
+    test.append("Commit database", test_commit())
     test.append("Create a FIM database integrity blockset", test_fim_make_integrity())
 
     print(test)
