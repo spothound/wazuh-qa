@@ -3,7 +3,7 @@
 
 from socket import socket, AF_UNIX, SOCK_STREAM
 from struct import pack, unpack
-from random import choice, randint, randrange, choice
+from random import choice, randint, choice
 from string import ascii_lowercase
 from os import listdir, unlink
 import json
@@ -33,6 +33,18 @@ def random_fim():
         'symbolic_path': random_string(8),
         'checksum': random_string(16),
     }
+
+
+def fim_checksum(files):
+    '''Returns the hex SHA-1 of an ordered FIM file list'''
+
+    m = sha1()
+
+    for f in files:
+        m.update(f['checksum'].encode())
+
+    return m.hexdigest()
+
 
 class Database:
     def __init__(self, id=0):
@@ -72,8 +84,13 @@ class Database:
         self.send("agent {0} syscheck save2 {1}".format(self.id, json.dumps(data)))
         return self.recv()
 
-    def fim_range_checksum(self, begin, end, checksum):
-        self.send("agent {0} syscheck range_checksum {1}".format(self.id, json.dumps({'begin': begin, 'end': end, 'checksum': checksum})))
+    def fim_range_checksum(self, begin, end, checksum, tail = None):
+        data = {'begin': begin, 'end': end, 'checksum': checksum}
+
+        if tail:
+            data['tail'] = tail
+
+        self.send("agent {0} syscheck range_checksum {1}".format(self.id, json.dumps(data)))
         return self.recv()
 
     def remove(self):
@@ -100,6 +117,7 @@ def test_connect():
         return False
 
     return True
+
 
 def test_fim(databases, queries):
     '''Connect to Wazuh DB and run FIM queries'''
@@ -149,12 +167,14 @@ def test_fim_insert(files):
 def test_fim_range_checksum_ok(files):
     '''Test a FIM entry range checksum'''
 
-    fim = choice(files)
-    checksum = sha1(fim['checksum'].encode()).hexdigest()
+    files.sort(key = lambda x: x['file'])
+    head = randint(0, len(files) - 1)
+    tail = randint(head + 1, len(files))
+    files = files[head:tail]
 
     try:
         with Database('001') as db:
-            ans = db.fim_range_checksum(fim['file'], fim['file'], checksum)
+            ans = db.fim_range_checksum(files[0]['file'], files[-1]['file'], fim_checksum(files), files[-1]['file'])
 
             if ans != ("ok "):
                 raise Exception("Checksum issue: {0}".format(ans))
@@ -169,9 +189,14 @@ def test_fim_range_checksum_ok(files):
 def test_fim_range_checksum_fail(files):
     '''Test a FIM entry range checksum'''
 
+    files.sort(key = lambda x: x['file'])
+    head = randint(0, len(files) - 1)
+    tail = randint(head + 1, len(files))
+    files = files[head:tail]
+
     try:
         with Database('001') as db:
-            ans = db.fim_range_checksum(files[0]['file'], files[-1]['file'], 'fakechecksum')
+            ans = db.fim_range_checksum(files[0]['file'], files[-1]['file'], 'fakechecksum', files[-1]['file'])
 
             if ans != ("ok checksum_fail"):
                 raise Exception("Checksum issue: {0}".format(ans))
@@ -188,10 +213,64 @@ def test_fim_range_empty():
 
     try:
         with Database('001') as db:
-            ans = db.fim_range_checksum('a', 'aa', 'fakechecksum')
+            ans = db.fim_range_checksum('a', 'aa', 'fakechecksum', 'aa')
 
             if ans != ("ok no_data"):
                 raise Exception("Checksum issue: {0}".format(ans))
+
+    except Exception as e:
+        print('# {0}'.format(e))
+        return False
+
+    return True
+
+
+def fim_dbsync(db, files, tail = None):
+    '''Synchronize a FIM list'''
+
+    # print("# n = {0} [ {1} .. {2} ]".format(len(files), files[0]['file'], files[-1]['file']))
+    ans = db.fim_range_checksum(files[0]['file'], files[-1]['file'], fim_checksum(files), tail)
+
+    if ans == 'ok ':
+        return True
+    elif ans == 'ok checksum_fail':
+        if len(files) == 1:
+            for fim in files:
+                ans = db.save2(fim)
+
+                if ans != "ok":
+                    raise Exception("Cannot save {0}: {1}".format(fim['file'], ans))
+        else:
+            m = len(files) // 2
+            fim_dbsync(db, files[:m], files[m]['file'])
+            fim_dbsync(db, files[m:], tail)
+
+    elif ans == 'ok no_data':
+        for fim in files:
+            ans = db.save2(fim)
+
+            if ans != "ok":
+                raise Exception("Cannot save {0}: {1}".format(fim['file'], ans))
+    else:
+        raise Exception("Cannot sync range: {0}".format(ans))
+
+    return True
+
+
+def test_fim_dbsync(files):
+    '''Test FIM file DB synchronization'''
+
+    files.sort(key = lambda x: x['file'])
+
+    try:
+        with Database('001') as db:
+            fim_dbsync(db, files)
+
+            # Now, we check that the database is synchronized
+            ans = db.fim_range_checksum(files[0]['file'], files[-1]['file'], fim_checksum(files))
+
+            if ans != 'ok ':
+                raise Exception("Database not synchronized: {0}".format(ans))
 
     except Exception as e:
         print('# {0}'.format(e))
@@ -246,7 +325,7 @@ def test_commit():
             ans = db.commit()
 
             if ans != ("ok"):
-                raise Exception("Cannot commit: {1}".format(ans))
+                raise Exception("Cannot commit: {0}".format(ans))
 
     except Exception as e:
         print('# {0}'.format(e))
@@ -256,6 +335,12 @@ def test_commit():
 
 
 def teardown():
+    try:
+        with Database('001') as db:
+            db.remove()
+    except Exception:
+        pass
+
     BLACKLIST = ('.template.db', '000.db', '000.db-shm', '000.db-wal', 'wdb')
     wdb_dir = '{0}/queue/db'.format(get_directory())
 
@@ -276,11 +361,12 @@ if __name__ == "__main__":
     test.append("Remove 1000 databases individually", test_remove_individual(1000))
     test.append("Remove 1000 databases", test_remove_multiple(1000))
     test.append("Remove 5000 databases", test_remove_multiple(5000), expected=False)
-    test.append("Insert 1000 FIM files", test_fim_insert(files))
+    test.append("Insert {0} FIM files".format(len(files)), test_fim_insert(files))
     test.append("Commit database", test_commit())
     test.append("Query a FIM entry range checksum expecting match", test_fim_range_checksum_ok(files))
     test.append("Query a FIM entry range checksum expecting failure", test_fim_range_checksum_fail(files))
     test.append("Query a FIM entry range checksum expecting no data", test_fim_range_empty())
+    test.append("Synchronize a FIM database", test_fim_dbsync([random_fim() for _ in range(1000)]))
 
     print(test)
     teardown()
