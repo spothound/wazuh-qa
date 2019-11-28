@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 declare -A config_file
 
 config_file=$(find  "$(pwd)" -name '*.conf')
@@ -24,10 +23,9 @@ do
     type="remote"
   fi
 
-  echo "{\"operation\":\"GET\",\"type\":\"request\",\"version\":\"3.11\",\"component\":\"check_configuration\",\"data\":{\"type\":\"${type}\",\"file\":\"${i}\"}" >> nc -U /var/ossec/queue/ossec/check_config_sock
+  name=($(echo ${i} | cut -d "/" -f 6 | cut -d "." -f 1))
+  valgrind --leak-check=full /var/ossec/bin/check_configuration -t ${type} -f ${i} &> valgrind_out_modulesd_config_file_${type}_${name}
+  echo -e '\x71\x00\x00\x00{"operation":"GET","type":"request","version":"3.10","component":"check_configuration","data":{"type":"'${type}'","file":"'${i}'"}}' | nc -U /var/ossec/queue/ossec/check_config_sock
   sleep 1
   /var/ossec/bin/ossec-control stop
-  echo 'cat valgrind_out_modulesd_config_file$i | grep "definitely lost"'
-  echo 'cat ossec.log | grep -E "ERROR|WARNING"'
-
 done
