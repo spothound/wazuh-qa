@@ -1,0 +1,3 @@
+---
+    - include_vars: "wazuh_manager.yml"
+    - include_vars: "wazuh_agent.yml"
