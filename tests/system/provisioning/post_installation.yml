@@ -1,0 +1,72 @@
+---
+  # Nginx Installation
+  # - hosts: kibana
+  #   strategy: free
+  #   vars_files:
+  #     - ./vars/elastic_nginx.yml
+  #   tasks:
+  #     - import_tasks: ../provisioning/roles/provisioning/tasks/nginx.yml
+  #   handlers:
+  #     - include: ../provisioning/roles/provisioning/handlers/main.yml
+  #   become: yes
+  #   become_user: root
+
+# Configure Wazuh Groups and Kibana Welcome screen
+  # - hosts: kibana, masters
+  #   strategy: free
+  #   vars_files:
+  #     - ./vars/wazuh_manager.yml
+  #     - ./vars/elastic_nginx.yml
+  #   tasks:
+  #     - import_tasks: ../provisioning/roles/provisioning/tasks/post_installation.yml
+  #   handlers:
+  #     - include: ../provisioning/roles/provisioning/handlers/main.yml
+  #   become: yes
+  #   become_user: root
+
+
+# Configure Agents for fim testing
+
+  - hosts: linuxagents, masters
+    strategy: free
+    vars_files:
+      - ./vars/aws.yml
+      - ./vars/credentials.yml
+      - ./vars/elastic_nginx.yml
+      - ./vars/wazuh_manager.yml
+      - ./vars/wazuh_agent.yml
+      - ./vars/use_cases.yml
+    tasks:
+      # - name: Including custom SSH public key
+      #   authorized_key:
+      #     user: wazuh
+      #     state: present
+      #     key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCmtW/4V1fRggv0eUPOo3SSxDNZMv2unFMcEpzAFQ8wmgYTz9w5lRNBprSr6d0iefDoSCdi4+aNVwWood2ja8/N8mhKe+8r66BYk3R5zqzE5uMA1V38A22FBtdoNV8xAh6HNuq8vDIRmfxu6izOUFjlIF2dZuGt7y3tBe7SXWMzozdWDTW3CeBIoMvqIoJhD8rAX44iTe1m5wgR+a+gw3PplGW9Cu5gb/+ksQxENahjiWkBnp85PT63Whfkt2dW5sV4JIhh2iyPNP3cMhzOtP6ol2IRW/rsYOE5XPST8N1din0n5yF3dtor7pwjrx7FUETEFu+CFq5CNeyuix6+unzufK/F+m5lQhsgtr3V0D2r9cxEhcMQppBkk6nS1KxVwSvUOyIKxmi0LuDe662buPwc352gIXwbpuSeownrGVn43CV9B+n8Y9nEXrPn/ZPRBPOutCUiHUKHaURIB1xIdLc8FX60V1dd7gd2VrWVW7gayJzzHkjxo6e7jZEZ1OF8jGU= borja@pop-os"
+
+      # - name: Including custom SSH public key 2
+      #   authorized_key:
+      #     user: wazuh
+      #     state: present
+      #     key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZoVF9t+Z1tajAw2yoAmyvQdDC/S17hc4gjWOsusTbi6qzwxynH+sULID8MjYjUM9WT9EOxCH1jVJuceQvL92QSnGVwQ7OvkIgr+NihuNRYQ4qCUrSV6NjUDjTcgI9juNSQe12UoMVD4iucwZrfiyTEhst7jZlajmHkHgXbmNxpw6tvokNBx8rgL/zBKCOJQzQWhaCLpEE18FTH4uvUC1cmHLETDFrQpJZO6OiXieFSekUuey1vPoUYsAVjtbC6O0R9YiEVCCvgGhhkLgTi3y713aWYJiZ+hY5BcJBMV4ZLzZAku+fcBwljNcbsXX2OFK1XyYwYe/cPrxXUmjSM3m5 Chema"
+
+      # - name: Configure core dump settings
+      #   shell: "echo 'ulimit -c unlimited' >> /root/.bashrc"
+    
+      # - name: Resizing disks | Centos
+      #   shell: "sudo growpart /dev/xvda 1 && xfs_growfs /dev/xvda1"
+      #   when:
+      #     - ansible_distribution|lower == "centos"
+
+      # - name: Resizing disk | Ubuntu
+      #   shell: "sudo growpart /dev/xvda 1 && resize2fs /dev/xvda1"
+      #   when:
+      #     - ansible_distribution|lower == "ubuntu"
+
+      - name: get df-h
+        shell: "df -h"
+        register: space
+
+      - debug:
+          msg: " {{ space.stdout }}"
+
+    become: yes

@@ -1,0 +1,33 @@
+- hosts: linuxagents
+  strategy: free
+  vars_files:
+    - ./vars/aws.yml
+    - ./vars/credentials.yml
+    - ./vars/elastic_nginx.yml
+    - ./vars/wazuh_manager.yml
+    - ./vars/wazuh_agent.yml
+    - ./vars/use_cases.yml
+  tasks:
+    - name: Copy ossec conf files | Centos
+      template:
+        src: "./ossec_conf_centos.j2"
+        dest: "/var/ossec/etc/ossec.conf"
+        owner: "root"
+        group: "ossec"
+        mode: '664'
+        force: yes
+      when: 
+        - ansible_distribution|lower == 'centos'
+
+    - name: Copy ossec conf files | Ubuntu
+      template:
+        src: "./ossec_conf_ubuntu.j2"
+        dest: "/var/ossec/etc/ossec.conf"
+        owner: "root"
+        group: "ossec"
+        mode: '664'
+        force: yes
+      when: 
+        - ansible_distribution|lower == 'ubuntu'
+
+  become: yes

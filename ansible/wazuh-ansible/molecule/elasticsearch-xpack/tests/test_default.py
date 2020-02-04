@@ -1,20 +1,37 @@
 import os
+import sys
 import json
 
 import testinfra.utils.ansible_runner
+import pytest
+
+sys.path.append(
+                os.path.join(os.path.dirname(__file__), '../../_utils/')
+                )  # noqa: E402
+from test_utils import get_full_version, API_USER, API_PASSWORD
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
 
-API_USER = 'molecule_user'
-API_PASSWORD = 'MoleculePassword'
+
+@pytest.fixture(scope="module")
+def ElasticRoleDefaults(host):
+    return host.ansible(
+        "include_vars",
+        (
+            "../../roles/elastic-stack/"
+            "ansible-elasticsearch/defaults/main.yml"
+        ),
+    )["ansible_facts"]
 
 
-def test_elasticsearch_is_installed(host):
+def test_elasticsearch_is_installed(host, ElasticRoleDefaults):
     """Test if the elasticsearch package is installed."""
     elasticsearch = host.package("elasticsearch")
+    elasticsearch_version = ElasticRoleDefaults["elastic_stack_version"]
+    full_es_version = get_full_version(elasticsearch)
     assert elasticsearch.is_installed
-    assert elasticsearch.version.startswith('7.3.2')
+    assert full_es_version.startswith(elasticsearch_version)
 
 
 def test_elasticsearch_is_running(host):
@@ -47,12 +64,13 @@ def test_elasticsearch_response(host):
     assert "error" not in cmd.stdout
 
 
-def test_elasticsearch_version_is_correct(host):
+def test_elasticsearch_version_is_correct(host, ElasticRoleDefaults):
     """Test elasticsearch response contains no errors."""
+    elasticsearch_version = ElasticRoleDefaults["elastic_stack_version"]
     cmd = host.run("curl -s -u %s:%s -k https://127.0.0.1:9200"
                    % (API_USER, API_PASSWORD))
     result = json.loads(cmd.stdout)
-    assert result["version"]["number"] == "7.3.2"
+    assert result["version"]["number"] == elasticsearch_version
 
 
 def test_elasticsearch_number_of_nodes(host):

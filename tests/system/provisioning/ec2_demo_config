@@ -1,0 +1,44 @@
+Host 54.219.165.153
+    User wazuh
+    IdentityFile ~/.ssh/devops-dev.pem
+    StrictHostKeyChecking no
+Host 18.144.21.169
+    User wazuh
+    IdentityFile ~/.ssh/devops-dev.pem
+    StrictHostKeyChecking no
+Host 54.183.54.73
+    User wazuh
+    IdentityFile ~/.ssh/devops-dev.pem
+    StrictHostKeyChecking no
+Host 18.144.19.135
+    User wazuh
+    IdentityFile ~/.ssh/devops-dev.pem
+    StrictHostKeyChecking no
+Host 54.215.244.227
+    User wazuh
+    IdentityFile ~/.ssh/devops-dev.pem
+    StrictHostKeyChecking no
+Host 52.53.192.113
+    User wazuh
+    IdentityFile ~/.ssh/devops-dev.pem
+    StrictHostKeyChecking no
+Host 54.215.204.227
+    User wazuh
+    IdentityFile ~/.ssh/devops-dev.pem
+    StrictHostKeyChecking no
+Host 54.215.210.137
+    User wazuh
+    IdentityFile ~/.ssh/devops-dev.pem
+    StrictHostKeyChecking no
+Host 13.57.232.218
+    User wazuh
+    IdentityFile ~/.ssh/devops-dev.pem
+    StrictHostKeyChecking no
+Host 13.56.59.192
+    User wazuh
+    IdentityFile ~/.ssh/devops-dev.pem
+    StrictHostKeyChecking no
+Host 13.57.236.47
+    User wazuh
+    IdentityFile ~/.ssh/devops-dev.pem
+    StrictHostKeyChecking no

@@ -9,20 +9,32 @@ lint:
     config-data:
       ignore: .virtualenv
 platforms:
-  - name: elasticsearch_${MOL_PLATFORM:-centos7}-1
-    image: ${MOL_IMAGE:-milcom/centos7-systemd}
+  - name: elasticsearch-${MOL_PLATFORM:-centos7}-1
+    image: ${MOL_IMAGE:-paulfantom/centos-molecule:7}
+    pre_build_image: true
     command: /sbin/init
     ulimits:
       - nofile:262144:262144
     privileged: true
     memory_reservation: 2048m
-  - name: elasticsearch_${MOL_PLATFORM:-centos7}-2
-    image: ${MOL_IMAGE:-milcom/centos7-systemd}
+    tmpfs:
+      - /run
+      - /tmp
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+  - name: elasticsearch-${MOL_PLATFORM:-centos7}-2
+    image: ${MOL_IMAGE:-paulfantom/centos-molecule:7}
+    pre_build_image: true
     command: /sbin/init
     ulimits:
       - nofile:262144:262144
     privileged: true
     memory_reservation: 2048m
+    tmpfs:
+      - /run
+      - /tmp
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
 provisioner:
   name: ansible
   config_options:

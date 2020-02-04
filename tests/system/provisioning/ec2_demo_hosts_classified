@@ -1,0 +1,22 @@
+[masters]
+54.215.244.227   private_ip=10.0.0.173
+
+[workers]
+
+[linux-agents]
+54.219.165.153   private_ip=10.0.1.33    ansible_ssh_user=centos agent_name=Centos_03
+18.144.21.169   private_ip=10.0.1.223    ansible_ssh_user=centos agent_name=Centos_00
+54.183.54.73   private_ip=10.0.1.252    ansible_ssh_user=centos agent_name=Centos_01
+18.144.19.135   private_ip=10.0.1.86    ansible_ssh_user=ubuntu agent_name=Ubuntu18_02
+52.53.192.113   private_ip=10.0.1.93    ansible_ssh_user=ubuntu agent_name=Ubuntu18_03
+54.215.204.227   private_ip=10.0.1.27    ansible_ssh_user=ubuntu agent_name=Ubuntu18_01
+54.215.210.137   private_ip=10.0.1.226    ansible_ssh_user=centos agent_name=Centos_02
+13.57.232.218   private_ip=10.0.1.38    ansible_ssh_user=ubuntu agent_name=Ubuntu18_04
+13.56.59.192   private_ip=10.0.1.191    ansible_ssh_user=ubuntu agent_name=Ubuntu18_00
+13.57.236.47   private_ip=10.0.1.214    ansible_ssh_user=centos agent_name=Centos_04
+
+[windows-agents]
+
+[kibana]
+
+[elasticsearch]

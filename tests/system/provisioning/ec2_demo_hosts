@@ -1,0 +1,149 @@
+masters:
+    hosts:
+        54.215.244.227:
+            private_ip: 10.0.0.173
+            wazuh_api_user:
+                - "wazuh:eMrqniY3jlVZCn2H"
+            filebeat_node_name: node-1
+    vars:
+        ansible_ssh_user: centos
+        ansible_ssh_private_key_file: ~/.ssh/devops-dev.pem
+        ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
+        wazuh_manager_version: 3.11.3-1
+        wazuh_manager_sources_installation:
+          enabled: true
+          branch: 3319-fim-rework
+        wazuh_api_sources_installation:
+          enabled: true
+          branch: 3319-fim-rework
+        wazuh_manager_config:
+          connection:
+            - type: 'secure'
+              port: '1514'
+              protocol: 'udp'
+              queue_size: 131072
+          api:
+            port: "55000"
+            https: 'yes'
+          cluster:
+            disable: 'no'
+            name: 'wazuh'
+            node_name: 'master'
+            node_type: 'master'
+            key: '3ab980499de48d0998a39b338b7b750a'
+            port: '1516'
+            bind_addr: '0.0.0.0'
+            nodes:
+              - '10.0.0.173'
+            hidden: 'no'
+        filebeat_version: 7.5.2
+        filebeat_xpack_security: true
+        elasticsearch_xpack_security_user: wazuh
+        elasticsearch_xpack_security_password: eMrqniY3jlVZCn2H
+        filebeat_output_elasticsearch_hosts:
+          - 127.0.0.1
+
+linuxagents:
+    hosts:
+        54.219.165.153:
+            private_ip: 10.0.1.33
+            wazuh_agent_authd:
+                enable: true
+                port: 1515
+                ssl_agent_ca: null
+                ssl_auto_negotiate: 'no'
+                agent_name: Centos_03
+            ansible_ssh_user: centos
+        18.144.21.169:
+            private_ip: 10.0.1.223
+            wazuh_agent_authd:
+                enable: true
+                port: 1515
+                ssl_agent_ca: null
+                ssl_auto_negotiate: 'no'
+                agent_name: Centos_00
+            ansible_ssh_user: centos
+        54.183.54.73:
+            private_ip: 10.0.1.252
+            wazuh_agent_authd:
+                enable: true
+                port: 1515
+                ssl_agent_ca: null
+                ssl_auto_negotiate: 'no'
+                agent_name: Centos_01
+            ansible_ssh_user: centos
+        18.144.19.135:
+            private_ip: 10.0.1.86
+            wazuh_agent_authd:
+                enable: true
+                port: 1515
+                ssl_agent_ca: null
+                ssl_auto_negotiate: 'no'
+                agent_name: Ubuntu18_02
+            ansible_ssh_user: ubuntu
+        52.53.192.113:
+            private_ip: 10.0.1.93
+            wazuh_agent_authd:
+                enable: true
+                port: 1515
+                ssl_agent_ca: null
+                ssl_auto_negotiate: 'no'
+                agent_name: Ubuntu18_03
+            ansible_ssh_user: ubuntu
+        54.215.204.227:
+            private_ip: 10.0.1.27
+            wazuh_agent_authd:
+                enable: true
+                port: 1515
+                ssl_agent_ca: null
+                ssl_auto_negotiate: 'no'
+                agent_name: Ubuntu18_01
+            ansible_ssh_user: ubuntu
+        54.215.210.137:
+            private_ip: 10.0.1.226
+            wazuh_agent_authd:
+                enable: true
+                port: 1515
+                ssl_agent_ca: null
+                ssl_auto_negotiate: 'no'
+                agent_name: Centos_02
+            ansible_ssh_user: centos
+        13.57.232.218:
+            private_ip: 10.0.1.38
+            wazuh_agent_authd:
+                enable: true
+                port: 1515
+                ssl_agent_ca: null
+                ssl_auto_negotiate: 'no'
+                agent_name: Ubuntu18_04
+            ansible_ssh_user: ubuntu
+        13.56.59.192:
+            private_ip: 10.0.1.191
+            wazuh_agent_authd:
+                enable: true
+                port: 1515
+                ssl_agent_ca: null
+                ssl_auto_negotiate: 'no'
+                agent_name: Ubuntu18_00
+            ansible_ssh_user: ubuntu
+        13.57.236.47:
+            private_ip: 10.0.1.214
+            wazuh_agent_authd:
+                enable: true
+                port: 1515
+                ssl_agent_ca: null
+                ssl_auto_negotiate: 'no'
+                agent_name: Centos_04
+            ansible_ssh_user: centos
+    vars:
+        ansible_ssh_user: ec2-user
+        ansible_ssh_private_key_file: ~/.ssh/devops-dev.pem
+        ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
+        wazuh_agent_version: 3.11.3-1
+        wazuh_agent_sources_installation:
+            enabled: true
+            branch: 3319-fim-rework
+        wazuh_managers:
+            - address: 54.215.244.227
+              protocol: udp
+

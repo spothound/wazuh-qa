@@ -19,11 +19,17 @@ platforms:
   #  groups:
   #    - manager
   - name: wazuh_agent_${MOL_PLATFORM:-centos7}
-    image: ${MOL_IMAGE:-milcom/centos7-systemd}
+    image: ${MOL_IMAGE:-paulfantom/centos-molecule:7}
+    pre_build_image: true
     networks:
       - name: wazuh
     groups:
       - agent
+    tmpfs:
+      - /run
+      - /tmp
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
   #- name: wazuh_agent_xenial
   #  image: solita/ubuntu-systemd:xenial
   #  privileged: true
@@ -69,7 +75,7 @@ provisioner:
         wazuh_managers:
           - address: "{{ wazuh_manager_ip }}"
             port: 1514
-            protocol: tcp
+            protocol: udp
             api_port: 55000
             api_proto: 'http'
             api_user: null

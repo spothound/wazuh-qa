@@ -1,0 +1,108 @@
+masters:
+    hosts:
+{% for instance in groups['masters'] %}
+        {{ groups['masters'][loop.index-1]}}:
+            private_ip: {{ hostvars[groups['masters'][loop.index-1]]['private_ip'] }}
+            wazuh_api_user:
+                - "{{ wazuh_api_admin_username }}:{{ wazuh_api_password }}"
+            filebeat_node_name: node-{{ (groups['elasticsearch'] | length) + 1 }}                
+{% endfor %}
+    vars:
+        ansible_ssh_user: centos
+        ansible_ssh_private_key_file: {{ ssh_key_path_private }}
+        ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
+        wazuh_manager_version: {{ wazuh_version }}
+{% if manager_installation_type == 'sources' %}
+        wazuh_manager_sources_installation:
+          enabled: true
+          branch: {{ sources_manager_branch }}
+{% endif %}
+{% if api_installation_type == 'sources' %}
+        wazuh_api_sources_installation:
+          enabled: true
+          branch: {{ sources_api_branch }}
+{% endif %}
+        wazuh_manager_config:
+          connection:
+            - type: 'secure'
+              port: '1514'
+              protocol: 'udp'
+              queue_size: 131072
+          api:
+            port: "{{ wazuh_api_port }}"
+            https: 'yes'
+          cluster:
+            disable: 'no'
+            name: 'wazuh'
+            node_name: 'master'
+            node_type: 'master'
+            key: '{{ wazuh_cluster_key }}'
+            port: '1516'
+            bind_addr: '0.0.0.0'
+            nodes:
+              - '{{ hostvars[groups['masters'][0]]['private_ip'] }}'
+            hidden: 'no'
+{% if packages_repository != 'production' %}
+{% if packages_repository == 'staging' %}
+          repo:
+            apt: 'deb https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/pre-release/apt/ unstable main'
+            yum: 'https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/pre-release/yum/'
+            gpg: 'https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/key/GPG-KEY-WAZUH'
+{% elif packages_repository == 'devel' %}
+          repo:
+            apt: 'deb https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/staging/apt/ unstable main'
+            yum: 'https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/staging/yum/'
+            gpg: 'https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/key/GPG-KEY-WAZUH'
+{% endif %}
+{% endif %}
+        filebeat_version: {{ elastic_version }}
+        filebeat_xpack_security: true            
+        elasticsearch_xpack_security_user: {{ elastic_user }}
+        elasticsearch_xpack_security_password: {{ elastic_password }}
+        filebeat_output_elasticsearch_hosts:
+          - 127.0.0.1
+
+linuxagents:
+    hosts:
+{% for instance in groups['linux-agents'] %}
+        {{ groups['linux-agents'][loop.index-1]}}:
+            private_ip: {{ hostvars[groups['linux-agents'][loop.index-1]]['private_ip'] }}
+            wazuh_agent_authd:
+                enable: true
+                port: 1515
+                ssl_agent_ca: null
+                ssl_auto_negotiate: 'no'
+                agent_name: {{ hostvars[groups['linux-agents'][loop.index-1]]['agent_name'] }}
+{% if hostvars[instance]['ansible_ssh_user'] is defined %}
+            ansible_ssh_user: {{ hostvars[instance]['ansible_ssh_user'] }}
+{% endif %}
+{% endfor %}
+    vars:
+        ansible_ssh_user: ec2-user
+        ansible_ssh_private_key_file: {{ ssh_key_path_private }}
+        ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
+        wazuh_agent_version: {{ linux_agents_version }}
+{% if agent_installation_type == 'sources' %}
+        wazuh_agent_sources_installation:
+            enabled: true
+            branch: {{ sources_agent_branch }}
+{% endif %}
+        wazuh_managers:
+            - address: {{ groups['masters'][0] }}
+              protocol: udp
+
+{% if packages_repository != 'production' %}
+{% if packages_repository == 'staging' %}
+        wazuh_agent_config:
+          repo:
+            apt: 'deb https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/pre-release/apt/ unstable main'
+            yum: 'https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/pre-release/yum/'
+            gpg: 'https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/key/GPG-KEY-WAZUH'
+{% elif packages_repository == 'devel' %}
+        wazuh_agent_config:
+          repo:
+            apt: 'deb https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/pre-release/apt/ unstable main'
+            yum: 'https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/staging/yum/'
+            gpg: 'https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/key/GPG-KEY-WAZUH'
+{% endif %}
+{% endif %}

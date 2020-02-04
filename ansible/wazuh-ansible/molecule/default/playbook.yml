@@ -1,6 +1,6 @@
 ---
 - name: Converge
-  hosts: all
+  hosts: manager-{{ lookup('env', 'MOL_PLATFORM') or 'centos7' }}
   roles:
     - role: wazuh/ansible-wazuh-manager
       vars:
@@ -14,6 +14,23 @@
                 port: '1516'
                 bind_addr: '0.0.0.0'
                 nodes:
-                - "manager_{{ lookup('env', 'MOL_PLATFORM') or 'centos7' }}"
+                - "manager-{{ lookup('env', 'MOL_PLATFORM') or 'centos7' }}"
                 hidden: 'no'
-    - { role: wazuh/ansible-filebeat, filebeat_output_elasticsearch_hosts: "elasticsearch_{{ lookup('env', 'MOL_PLATFORM') or 'centos7' }}:9200" }
+    - { role: wazuh/ansible-filebeat, filebeat_output_elasticsearch_hosts: "elasticsearch-{{ lookup('env', 'MOL_PLATFORM') or 'centos7' }}:9200" }
+
+- hosts: agent-{{ lookup('env', 'MOL_PLATFORM') or 'centos7' }}
+  roles:
+    - role: wazuh/ansible-wazuh-agent
+  vars:
+    wazuh_managers:
+      - address: "manager-{{ lookup('env', 'MOL_PLATFORM') or 'centos7' }}"
+        port: 1514
+        protocol: udp
+        api_port: 55000
+        api_proto: 'http'
+        api_user: ansible
+    wazuh_agent_authd:
+      enable: true
+      port: 1515
+      ssl_agent_ca: null
+      ssl_auto_negotiate: 'no'

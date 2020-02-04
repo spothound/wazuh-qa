@@ -9,7 +9,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 
 def get_wazuh_version():
     """This return the version of Wazuh."""
-    return "3.10.2"
+    return "3.11.1"
 
 
 def test_wazuh_packages_are_installed(host):
@@ -73,13 +73,13 @@ def test_open_ports(host):
     """Test if the main port is open and the agent-auth is not open."""
     distribution = host.system_info.distribution.lower()
     if distribution == 'ubuntu':
-        assert host.socket("tcp://0.0.0.0:1514").is_listening
+        assert host.socket("udp://0.0.0.0:1514").is_listening
     elif distribution == 'centos':
-        assert host.socket("tcp://127.0.0.1:1514").is_listening
+        assert host.socket("udp://127.0.0.1:1514").is_listening
 
 
 def test_filebeat_is_installed(host):
     """Test if the elasticsearch package is installed."""
     filebeat = host.package("filebeat")
     assert filebeat.is_installed
-    assert filebeat.version.startswith('7.3.2')
+    assert filebeat.version.startswith('7.5.1')
