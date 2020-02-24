@@ -159,7 +159,7 @@ windowsagents:
         wazuh_winagent_config_url: https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/warehouse/branches/3.12/windows/wazuh-agent-3.12.0-0.3319fimreworksqlite.msi
         wazuh_winagent_package_name: wazuh-agent-3.12.0-0.3319fimreworksqlite.msi
         wazuh_winagent_config:
-             md5: 5d11f909b0b263d39db1f0abcc9a1c88
+             md5: b2629b5eebdb799e21333ae2656f206a
         wazuh_managers:
             - address: 172.16.0.111
               protocol: tcp
