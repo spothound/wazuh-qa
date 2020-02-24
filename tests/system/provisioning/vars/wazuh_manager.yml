@@ -6,7 +6,7 @@ wazuh_version: 3.11.3-1
 
 wazuh_server_port: 1514
 wazuh_registration_port: 1515
-wazuh_registration_password: T3stP4ssw0rd--
+wazuh_registration_password: AMMFy5ZgUyGhkRwa
 wazuh_cluster_key: 3ab980499de48d0998a39b338b7b750a
 
 ### Wazuh API
@@ -14,7 +14,7 @@ wazuh_cluster_key: 3ab980499de48d0998a39b338b7b750a
 wazuh_api_protocol: https
 wazuh_api_port: 55000
 wazuh_api_admin_username: wazuh
-wazuh_api_password: T3stP4ssw0rd--
+wazuh_api_password: AMMFy5ZgUyGhkRwa
 
 ### Paths
 
@@ -27,7 +27,6 @@ wazuh_ansible_repository_path: "/tmp/wazuh-ansible"
 wazuh_ansible_branch: devel
 
 ### Repositories
-
 # yum
 
 wazuh_yum_development_repo: https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/staging/yum/\nprotect=1
@@ -40,12 +39,5 @@ wazuh_apt_development_repo: https://s3-us-west-1.amazonaws.com/packages-dev.wazu
 wazuh_apt_staging_repo: https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/pre-release/apt/
 wazuh_apt_production_repo: https://packages.wazuh.com/3.x/apt/ stable main
 
-### Custom packages
 
-wazuh_custom_packages_installation_manager_enabled: true
-wazuh_custom_packages_installation_manager_deb_url: "https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/warehouse/branches/3.12/deb/var/wazuh-manager_3.12.0-0.3319fimreworksqlite_amd64.deb"
-wazuh_custom_packages_installation_manager_rpm_url: "https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/warehouse/branches/3.12/rpm/var/wazuh-manager-3.12.0-0.3319fimreworksqlite.x86_64.rpm"
-wazuh_custom_packages_installation_api_enabled: true
-wazuh_custom_packages_installation_api_deb_url: "https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/warehouse/branches/3.12/deb/var/wazuh-api_3.12.0-0.3319fimreworksqlite_amd64.deb"
-wazuh_custom_packages_installation_api_rpm_url: "https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/warehouse/branches/3.12/rpm/var/wazuh-api-3.12.0-0.3319fimreworksqlite.x86_64.rpm"
 
