@@ -14,5 +14,13 @@
           pinned: yes
           state: present
           ignore_checksums: yes
+
+      - name: Install Python3 in Windows machines
+        win_chocolatey:
+          name: python
+          state: present
+          version: 3.7.4
+          pinned: yes
+          ignore_checksums: yes
     when:
-      - ansible_os_family == "Windows"
+      - inventory_hostname in groups['windowsagents']
