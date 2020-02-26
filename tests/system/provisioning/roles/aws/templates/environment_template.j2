@@ -36,7 +36,7 @@ Metadata:
         Parameters:
           - AvailabilityZone
           - KeyPairName
-      - 
+      -
         Label:
           default: "Version and instance types"
         Parameters:
@@ -46,7 +46,7 @@ Metadata:
           - KibanaInstanceType
           - SshUsername
           - SshPassword
-      - 
+      -
         Label:
           default: "Wazuh Amazon Linux agent instance type"
         Parameters:
@@ -56,8 +56,8 @@ Metadata:
           - RedHatInstanceType
           - DebianInstanceType
           - UbuntuInstanceType
-          
-      - 
+
+      -
         Label:
           default: "Wazuh configuration"
         Parameters:
@@ -81,7 +81,7 @@ Metadata:
 
 Parameters:
 
-  # AWS environment 
+  # AWS environment
   AvailabilityZone:
     Description: Select an availability zone for the VPC
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
@@ -151,8 +151,8 @@ Parameters:
     AllowedValues:
       - production
       - staging
-      - devel   
-      - sources 
+      - devel
+      - sources
     ConstraintDescription: Must contain valid instance type
     Default: staging
     Description: Select a stage
@@ -309,7 +309,7 @@ Parameters:
     Description: 'Used for HTTPS access to WUI. Existent certificate, identified by its Amazon Resource Name (ARN).'
     Type: String
 
-Conditions: 
+Conditions:
   HasSslCert: !Not [!Equals [!Ref SSLCertificateARN, ""]]
 
 Resources:
@@ -417,7 +417,7 @@ Resources:
     Properties:
       SubnetId: !Ref SubnetAgents
       RouteTableId: !Ref PublicRouteTable
-    
+
   # Security groups
   ElasticSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
@@ -514,7 +514,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-WazuhSecurityGroup'
-  
+
   # Elasticsearch load balancer
   ElbElasticSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
@@ -539,7 +539,7 @@ Resources:
     Properties:
       Name: !Sub '${AWS::StackName}-Wazuh'
       Scheme: internet-facing
-      Subnets: 
+      Subnets:
         - !Ref SubnetWazuh
       Type: network
       Tags:
@@ -593,7 +593,7 @@ Resources:
       LoadBalancerArn: !Ref WazuhNetworkLoadBalancer
       Port: !Ref WazuhRegistrationPort
       Protocol: TCP
-  
+
   # Reporting Target Group for Wazuh master and worker nodes
   ReportingTG:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -610,7 +610,7 @@ Resources:
         Port: !Ref WazuhServerPort
 {% for n in range(n_wazuh_workers) %}
       - Id: !Ref WazuhWorkerInstance{{ n }}
-        Port: !Ref WazuhServerPort  
+        Port: !Ref WazuhServerPort
 {% endfor %}
       Tags:
         - Key: Name
@@ -696,9 +696,9 @@ Resources:
       NetworkInterfaces:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
-          GroupSet: 
+          GroupSet:
             - Ref: "WazuhSecurityGroup"
-          SubnetId: 
+          SubnetId:
             Ref: "SubnetWazuh"
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
@@ -709,16 +709,16 @@ Resources:
         - Key: Name
           Value: WazuhMaster
         - Key: Identifier
-          Value: master_01    
+          Value: master_01
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash -xe
           /opt/aws/bin/cfn-init --stack ${AWS::StackName} --resource WazuhMasterInstance --configsets WazuhInstallationSet --region ${AWS::Region}
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource WazuhMasterInstance --region ${AWS::Region}
-    DependsOn: GatewayToInternet        
+    DependsOn: GatewayToInternet
 
   # Amazon Linux agent instance and networking requirements
-{% for n in range(n_agents_amazonlinux2) %}  
+{% for n in range(n_agents_amazonlinux2) %}
   Amazon{{ n }}:
     Type: AWS::EC2::Instance
     Metadata:
@@ -743,9 +743,9 @@ Resources:
       NetworkInterfaces:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
-          GroupSet: 
+          GroupSet:
             - Ref: "WazuhSecurityGroup"
-          SubnetId: 
+          SubnetId:
             Ref: "SubnetAgents"
       Tags:
         - Key: Name
@@ -758,10 +758,10 @@ Resources:
           /opt/aws/bin/cfn-init --stack ${AWS::StackName} --resource Amazon{{ n }} --configsets AmazonInstallationSet --region ${AWS::Region}
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource Amazon{{ n }} --region ${AWS::Region}
     DependsOn: GatewayToInternet
-{% endfor %}      
+{% endfor %}
 
   # CentOS agent instance and networking requirements
-{% for n in range(n_agents_centos7) %}    
+{% for n in range(n_agents_centos7) %}
   Centos{{ n }}:
     Type: AWS::EC2::Instance
     Metadata:
@@ -781,9 +781,9 @@ Resources:
       NetworkInterfaces:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
-          GroupSet: 
+          GroupSet:
             - Ref: "WazuhSecurityGroup"
-          SubnetId: 
+          SubnetId:
             Ref: "SubnetAgents"
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
@@ -827,9 +827,9 @@ Resources:
       NetworkInterfaces:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
-          GroupSet: 
+          GroupSet:
             - Ref: "WazuhSecurityGroup"
-          SubnetId: 
+          SubnetId:
             Ref: "SubnetAgents"
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
@@ -858,9 +858,9 @@ Resources:
       NetworkInterfaces:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
-          GroupSet: 
+          GroupSet:
             - Ref: "WazuhSecurityGroup"
-          SubnetId: 
+          SubnetId:
             Ref: "SubnetAgents"
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
@@ -895,9 +895,9 @@ Resources:
       NetworkInterfaces:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
-          GroupSet: 
+          GroupSet:
             - Ref: "WazuhSecurityGroup"
-          SubnetId: 
+          SubnetId:
             Ref: "SubnetAgents"
       Tags:
         - Key: Name
@@ -928,9 +928,9 @@ Resources:
       NetworkInterfaces:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
-          GroupSet: 
+          GroupSet:
             - Ref: "WazuhSecurityGroup"
-          SubnetId: 
+          SubnetId:
             Ref: "SubnetAgents"
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
@@ -978,9 +978,9 @@ Resources:
       NetworkInterfaces:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
-          GroupSet: 
+          GroupSet:
             - Ref: "WazuhSecurityGroup"
-          SubnetId: 
+          SubnetId:
             Ref: "SubnetAgents"
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
@@ -1022,15 +1022,15 @@ Resources:
         - "RegionMap"
         - Ref: "AWS::Region"
         - UBUNTU18HVM
-      InstanceType: m4.2xlarge
+      InstanceType: a1.large
       IamInstanceProfile: !Ref InstanceProfile
       KeyName: !Ref KeyPairName
       NetworkInterfaces:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
-          GroupSet: 
+          GroupSet:
             - Ref: "WazuhSecurityGroup"
-          SubnetId: 
+          SubnetId:
             Ref: "SubnetAgents"
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
@@ -1078,9 +1078,9 @@ Resources:
       NetworkInterfaces:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
-          GroupSet: 
+          GroupSet:
             - Ref: "WazuhSecurityGroup"
-          SubnetId: 
+          SubnetId:
             Ref: "SubnetAgents"
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
@@ -1112,10 +1112,10 @@ Resources:
 Outputs:
   # ElasticBootstrapIp:
   #   Description: Elastic Stack versions
-  #   Value: !GetAtt 
+  #   Value: !GetAtt
   #     - ElasticBootstrap
   #     - PublicIp
-{% for n in range(n_elasticsearch_instances) %}      
+{% for n in range(n_elasticsearch_instances) %}
   # ElasticMaster{{ n }}:
   #   Description: Elastic Stack versions
   #   Value: !GetAtt
@@ -1127,13 +1127,13 @@ Outputs:
     Value: !GetAtt
       - WazuhMasterInstance
       - PublicIp
-{% for n in range(n_wazuh_workers) %}         
+{% for n in range(n_wazuh_workers) %}
   # WazuhWorkerInstance{{ n }}:
   #   Description: Wazuh workers versions
   #   Value: !GetAtt
   #     - WazuhWorkerInstance{{ n }}
   #     - PublicIp
-{% endfor %}      
+{% endfor %}
   # KibanaInstance:
   #   Description: Kibana versions
   #   Value: !GetAtt

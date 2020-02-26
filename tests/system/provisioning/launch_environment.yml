@@ -33,15 +33,15 @@
           - use_cases_actions.log
           - use_cases_tests.log
 
-      # - name: Creating AWS Stack, generating configuration and host files
-      #   shell: "ansible-playbook {{ item }}"
-      #   with_items:
-      #     - "deploy_aws_stack.yml >> ./deployment_logs/log_{{ current_date_time }}/deploy.log"
-      #     - "generate_hosts_file.yml -i {{ hosts_classified_destination }} >> ./deployment_logs/log_{{ current_date_time }}/deploy.log"
-      #     - "setup_provisioning.yml -i {{ ansible_hosts_destination }} >> ./deployment_logs/log_{{ current_date_time }}/deploy.log"
-      #     - "setup_instances.yml -i {{ ansible_hosts_destination }} >> ./deployment_logs/log_{{ current_date_time }}/deploy.log"
-          # The elasticsearch[0] is the node which will generate certificates, it's a must to provision him first
-          # - "provision_playbook.yml -i {{ ansible_hosts_destination }} -l elasticsearch[0] >> ./deployment_logs/log_{{ current_date_time }}/elasticsearch_bootstrap.log"
+       - name: Creating AWS Stack, generating configuration and host files
+         shell: "ansible-playbook {{ item }}"
+         with_items:
+           - "deploy_aws_stack.yml >> ./deployment_logs/log_{{ current_date_time }}/deploy.log"
+           - "generate_hosts_file.yml -i {{ hosts_classified_destination }} >> ./deployment_logs/log_{{ current_date_time }}/deploy.log"
+           - "setup_provisioning.yml -i {{ ansible_hosts_destination }} >> ./deployment_logs/log_{{ current_date_time }}/deploy.log"
+           - "setup_instances.yml -i {{ ansible_hosts_destination }} >> ./deployment_logs/log_{{ current_date_time }}/deploy.log"
+         # The elasticsearch[0] is the node which will generate certificates, it's a must to provision him first
+         # - "provision_playbook.yml -i {{ ansible_hosts_destination }} -l elasticsearch[0] >> ./deployment_logs/log_{{ current_date_time }}/elasticsearch_bootstrap.log"
 
       # - name: Deploying ES, Wazuh Managers, Agents and Kibana
       #   shell: "ansible-playbook provision_playbook.yml -i {{ ansible_hosts_destination }} {{ item }}"
@@ -77,7 +77,7 @@
       #   register: jobs_agents
       #   until: jobs_agents.finished
       #   retries: 1000
-      #   delay: 10      
+      #   delay: 10
 
       - name: Launching post installation tasks
         shell: "ansible-playbook -i {{ ansible_hosts_destination }} {{ item }}"

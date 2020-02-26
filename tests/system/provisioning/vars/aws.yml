@@ -18,10 +18,10 @@ sources_api_branch: 3319-fim-rework
 
 # Number of instances
 
-n_agents_ubuntu18: 5
+n_agents_ubuntu18: 10
 n_agents_ubuntu16: 0
 n_agents_ubuntu14: 0
-n_agents_centos7: 5
+n_agents_centos7: 0
 n_agents_rhel8: 0
 n_agents_amazonlinux2: 0
 n_agents_windows2012: 0
