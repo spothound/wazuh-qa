@@ -22,7 +22,7 @@ from wazuh_testing.fim import (LOG_FILE_PATH, callback_audit_added_rule,
 from wazuh_testing.tools.configuration import load_wazuh_configurations, check_apply_test
 from wazuh_testing.tools.file import truncate_file
 from wazuh_testing.tools.monitoring import FileMonitor
-from wazuh_testing.tools.services import control_service
+from wazuh_testing.tools.services import control_service, check_daemon_status
 
 # Marks
 
@@ -193,9 +193,10 @@ def test_audit_key(audit_key, path, get_configuration, configure_environment, re
     os.system(add_rule_command)
 
     # Restart and for wazuh
+    control_service('stop')
     truncate_file(LOG_FILE_PATH)
-    control_service('restart')
     wazuh_log_monitor = FileMonitor(LOG_FILE_PATH)
+    control_service('start')
     detect_initial_scan(wazuh_log_monitor)
 
     # Look for audit_key word
@@ -242,8 +243,10 @@ def test_restart_audit(tags_to_apply, should_restart, get_configuration, configu
 
     time_before_restart = get_audit_creation_time()
     control_service('restart')
-    time.sleep(10)
-
+    try:
+        check_daemon_status(timeout=30)
+    except TimeoutError:
+        pass
     time_after_restart = get_audit_creation_time()
 
     if should_restart:

@@ -10,10 +10,9 @@ import pytest
 
 from wazuh_testing import global_parameters
 from wazuh_testing.fim import (HARDLINK, LOG_FILE_PATH, REGULAR, EventChecker,
-                               check_time_travel, create_file, delete_file, modify_file_content, generate_params)
+                               check_time_travel, create_file, modify_file_content, generate_params)
 from wazuh_testing.tools import PREFIX
 from wazuh_testing.tools.configuration import load_wazuh_configurations
-from wazuh_testing.tools.file import truncate_file
 from wazuh_testing.tools.monitoring import FileMonitor
 
 # Marks
@@ -28,6 +27,8 @@ testdir1 = os.path.join(PREFIX, 'testdir1')
 unmonitored_dir = os.path.join(PREFIX, 'test_unmonitorized')
 test_directories = [testdir1, unmonitored_dir]
 frequency = global_parameters.default_timeout * 3 + 2
+
+wazuh_log_monitor = FileMonitor(LOG_FILE_PATH)
 
 # configurations
 
@@ -48,9 +49,6 @@ def get_configuration(request):
     return request.param
 
 
-from wazuh_testing.fim import LOG_FILE_PATH, detect_initial_scan
-from wazuh_testing.tools.services import control_service
-
 @pytest.fixture(scope='function')
 def clean_directories(request):
 
@@ -63,6 +61,8 @@ def clean_directories(request):
                     os.unlink(file_path)
             except Exception as e:
                 print(e)
+
+
 # tests
 
 @pytest.mark.skipif(sys.platform == "win32", reason="Windows does not have support for Hard links.")
