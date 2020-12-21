@@ -8,6 +8,9 @@ import requests
 import json
 
 # Variables
+import yaml
+
+from wazuh_testing.tools import WAZUH_API_CONF
 
 API_PROTOCOL = 'https'
 API_HOST = 'localhost'
@@ -91,3 +94,31 @@ def get_security_resource_information(**kwargs):
         return response.json()['data']['affected_items'][0]
     else:
         return {}
+
+
+def check_api_config_file():
+    """Return a dictionary with the content of the API configuration file.
+
+    Returns
+    -------
+    dict
+    """
+    with open(WAZUH_API_CONF) as f:
+        content = yaml.safe_load(f)
+
+    return content if content else {}
+
+
+def change_api_conf(content):
+    """Change the API configuration file content.
+
+    Parameters
+    ----------
+    content : str or dict
+        New API configuration file content.
+    """
+    with open(WAZUH_API_CONF, 'w') as f:
+        if isinstance(content, str):
+            f.write(content)
+        elif isinstance(content, dict):
+            yaml.safe_dump(content, f, default_flow_style=False)
