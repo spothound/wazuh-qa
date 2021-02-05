@@ -1,0 +1,13 @@
+# conf 1
+- tags:
+  - TAG
+  apply_to_modules:
+  - test_general_configuration_enabled
+  sections:
+  - section: wodle
+    attributes:
+      - name: 'syscollector'
+    elements:
+      - disabled:
+          value: DISABLED
+          
