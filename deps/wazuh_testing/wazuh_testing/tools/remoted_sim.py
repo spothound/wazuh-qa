@@ -5,6 +5,7 @@
 import base64
 import hashlib
 import json
+import logging
 import socket
 import struct
 import threading
@@ -14,6 +15,7 @@ from struct import pack
 
 from Crypto.Cipher import AES, Blowfish
 from Crypto.Util.Padding import pad
+from wazuh_testing import TCP, UDP, is_tcp, is_udp
 from wazuh_testing.tools import WAZUH_PATH
 
 
@@ -93,13 +95,13 @@ class RemotedSimulator:
             self.listener_thread.start()
 
     def _start_socket(self):
-        if self.protocol == "tcp":
+        if is_tcp(self.protocol):
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self.sock.settimeout(10)
             self.sock.bind((self.server_address, self.remoted_port))
             self.sock.listen(1)
-        elif self.protocol == "udp":
+        elif is_udp(self.protocol):
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self.sock.settimeout(10)
@@ -347,7 +349,7 @@ class RemotedSimulator:
         Receive message from connection
         """
         while True:
-            if self.protocol == 'tcp':
+            if is_tcp(self.protocol):
                 rcv = connection.recv(4)
                 if len(rcv) == 4:
                     data_len = ((rcv[3] & 0xFF) << 24) | ((rcv[2] & 0xFF) << 16) | ((rcv[1] & 0xFF) << 8) | (rcv[0] & 0xFF)
@@ -380,7 +382,7 @@ class RemotedSimulator:
         Listener thread to read every received package from the socket and process it
         """
         while self.running:
-            if self.protocol == 'tcp':
+            if is_tcp(self.protocol):
                 # Wait for a connection
                 try:
                     connection, client_address = self.sock.accept()
@@ -391,6 +393,7 @@ class RemotedSimulator:
                         data = self.recv_all(connection, data_size)
                         try:
                             ret = self.process_message(client_address, data)
+
                         except Exception:
                             time.sleep(1)
                             connection.close()
@@ -413,10 +416,11 @@ class RemotedSimulator:
                             msg = self.create_sec_message(f"#!-execd {self.active_response_message}", "aes")
                             self.active_response_message = None
                             self.send(connection, msg)
-                except Exception:
+                except Exception as e:
+                    logging.warning(f"Exception: {e}")
                     continue
 
-            elif self.protocol == 'udp':
+            elif is_udp(self.protocol):
                 try:
                     data, client_address = self.sock.recvfrom(65536)
                     ret = self.process_message(client_address, data)
@@ -441,7 +445,7 @@ class RemotedSimulator:
 
                 while not self.encryption_key and self.running:
                     # Receive ACK message and process it
-                    if self.protocol == 'tcp':
+                    if is_tcp(self.protocol):
                         data = self.receive_message(connection)
                     try:
                         ret = self.process_message(client_address, data)
@@ -518,13 +522,13 @@ class RemotedSimulator:
         send method to write on the socket
         """
         self.update_counters()
-        if self.protocol == "tcp":
+        if is_tcp(self.protocol):
             try:
                 length = pack('<I', len(data))
                 dst.send(length + data)
             except:
                 pass
-        elif self.protocol == "udp":
+        elif is_udp(self.protocol):
             try:
                 self.sock.sendto(data, dst)
             except:
@@ -567,6 +571,8 @@ class RemotedSimulator:
 
         # Decrypt message
         rcv_msg = self.decrypt_message(received, crypto_method)
+
+        logging.debug(f"Remoted simulator received: {rcv_msg}")
 
         # Hash message means a response is required
         if rcv_msg.find('#!-') != -1:
