@@ -4,11 +4,11 @@
 import os
 import pytest
 import time
-
 import wazuh_testing.tools.agent_simulator as ag
+from wazuh_testing import remote as rd
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 from wazuh_testing.tools.sockets import send_request
-import logging
+
 # Marks
 pytestmark = pytest.mark.tier(level=0)
 
@@ -17,15 +17,17 @@ test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data
 configurations_path = os.path.join(test_data_path, 'wazuh_request_agent_info.yaml')
 
 parameters = [
+    {'PROTOCOL': 'udp'},
     {'PROTOCOL': 'udp,tcp'},
     {'PROTOCOL': 'tcp'},
-    {'PROTOCOL': 'udp'},
+
+
 ]
 
 metadata = [
+    {'PROTOCOL': 'udp'},
     {'PROTOCOL': 'udp,tcp'},
     {'PROTOCOL': 'tcp'},
-    {'PROTOCOL': 'udp'},
 ]
 
 # test cases
@@ -66,16 +68,27 @@ def test_request(get_configuration, configure_environment, restart_remoted, comm
 
     agents = [ag.Agent(manager_address, "aes", os="debian8", version="4.2.0") for _ in range(len(protocols))]
     for agn, protocol in zip(agents, protocols):
-        if "disconnected" not in command_request:
-            agent, sender, injector = ag.connect(agn, manager_address, protocol)
-        else:
+        if "disconnected" in command_request:
             agent = agn
+        else:
+            agent, sender, injector = ag.connect(agn, manager_address, protocol)
+
+            # Check up file (push start) message
+            rd.check_agent_received_message(agent.rcv_msg_queue, r'#!-up file \w+ merged.mg', timeout=10,
+                                            error_message="initial up file message not received")
+
+            # Check agent.conf message
+            rd.check_agent_received_message(agent.rcv_msg_queue, '#default', timeout=10,
+                                            error_message="agent.conf message not received")
+            # Check close file (push end) message
+            rd.check_agent_received_message(agent.rcv_msg_queue, 'close', timeout=70,
+                                            error_message="initial close message not received")
 
         msg_request = f'{agent.id} {command_request}'
 
         response = send_request(msg_request)
 
-        assert expected_answer in response, "Remoted unexpected answer"
+        assert expected_answer in response, f"Remoted unexpected answer: {response}"
 
         if "disconnected" not in command_request:
             injector.stop_receive()

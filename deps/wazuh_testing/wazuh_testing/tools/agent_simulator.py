@@ -406,6 +406,7 @@ class Agent:
         """
         msg_decoded_list = message.split(' ')
         self.rcv_msg_queue.put(message)
+
         if '#!-req' in msg_decoded_list[0]:
             self.process_command(sender, msg_decoded_list)
         elif '#!-up' in msg_decoded_list[0]:
@@ -592,7 +593,7 @@ class Agent:
         status = self.get_connection_status()
         if status == 'active':
             return
-        raise AttributeError("Agent is not active yet")
+        raise AttributeError(f"Agent is not active yet: {status}")
 
     def set_module_status(self, module_name, status):
         self.modules[module_name]['status'] = status
@@ -1111,7 +1112,11 @@ class InjectorThread(threading.Thread):
         elif self.module == "fim_integrity":
             self.fim_integrity()
         elif self.module == "receive_messages":
-            self.agent.receive_message(self.sender)
+            try:
+                self.agent.receive_message(self.sender)
+            except Exception as e:
+                logging.critical(f"Error in receive_message branch! {e}")
+
         else:
             logging.debug("Module unknown: {}".format(self.module))
             pass
