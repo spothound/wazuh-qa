@@ -15,7 +15,6 @@ from wazuh_testing import UDP, TCP
 from wazuh_testing import remote as rd
 from wazuh_testing.tools import ARCHIVES_LOG_FILE_PATH, LOG_FILE_PATH, WAZUH_PATH
 from wazuh_testing.tools import QUEUE_SOCKETS_PATH
-from wazuh_testing.tools import WAZUH_CONF
 from wazuh_testing.tools import file
 from wazuh_testing.tools import monitoring
 from wazuh_testing.tools.services import control_service
@@ -96,19 +95,6 @@ def callback_invalid_value(option, value):
         callable: callback to detect this event.
     """
     msg = fr"ERROR: \(\d+\): Invalid value for element '{option}': {value}."
-    return monitoring.make_callback(pattern=msg, prefix=monitoring.REMOTED_DETECTOR_PREFIX)
-
-
-def callback_error_in_configuration(severity):
-    """Create a callback to detect configuration error in ossec.conf file.
-
-    Args:
-        severity (str): ERROR or CRITICAL.
-
-    Returns:
-        callable: callback to detect this event.
-    """
-    msg = fr"{severity}: \(\d+\): Configuration error at '{WAZUH_CONF}'."
     return monitoring.make_callback(pattern=msg, prefix=monitoring.REMOTED_DETECTOR_PREFIX)
 
 

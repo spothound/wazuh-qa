@@ -134,3 +134,17 @@ def get_manager_configuration(section=None, field=None):
         if field is not None:
             answer = answer[field]
     return answer
+
+def compare_config_api_response(configuration,section):
+    """Assert if configuration values provided are the same that configuration provided for API response.
+
+    Args:
+        configuration (dict): Dictionary with wazuh manager configuration.
+    """
+    # Check that API query return the selected configuration
+    for field in configuration.keys():
+        api_answer = get_manager_configuration(section=section, field=field)
+        if field == 'protocol':
+            assert all(map(lambda x, y: x == y, configuration[field].split(","), api_answer))
+        else:
+            assert configuration[field] == api_answer, "Wazuh API answer different from introduced configuration"

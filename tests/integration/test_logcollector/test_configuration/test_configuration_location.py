@@ -4,6 +4,7 @@
 
 import os
 import pytest
+import wazuh_testing.remote as remote
 
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 
@@ -23,7 +24,7 @@ metadata = [
     {'location': '/tmp/test.txt', 'log_format': 'syslog'},
 ]
 
-configurations = load_wazuh_configurations(configurations_path, "test_basic_configuration_location",
+configurations = load_wazuh_configurations(configurations_path, "test_configuration_location",
                                            params=parameters,
                                            metadata=metadata)
 configuration_ids = [f"{x['LOCATION'], x['LOG_FORMAT']}" for x in parameters]
@@ -36,15 +37,36 @@ def get_configuration(request):
     return request.param
 
 
-def test_location_valid(get_configuration, configure_environment, restart_remoted):
+def test_location_valid(get_configuration, configure_environment, restart_logcollector):
     """
     """
     cfg = get_configuration['metadata']
+
+    if not cfg['valid'] :
+        pytest.skip('Valid values for location provided')
+
     assert 1
 
 
-def test_location_invalid(get_configuration, configure_environment, restart_remoted):
+def test_location_invalid(get_configuration, configure_environment, restart_logcollector):
     """
     """
-    assert 1
+    if cfg['valid']:
+        pytest.skip('UDP only supports one message per datagram.')
 
+    log_callback = remote.callback_invalid_value('connection', cfg['connection'])
+    wazuh_log_monitor.start(timeout=5, callback=log_callback,
+                            error_message="The expected error output has not been produced")
+
+    log_callback = remote.callback_error_in_configuration('ERROR')
+    wazuh_log_monitor.start(timeout=5, callback=log_callback,
+                            error_message="The expected error output has not been produced")
+
+    log_callback = remote.callback_error_in_configuration('CRITICAL')
+    wazuh_log_monitor.start(timeout=5, callback=log_callback,
+                            error_message="The expected error output has not been produced")
+
+
+"""
+2021/03/15 11:09:46 wazuh-logcollector: INFO: (1950): Analyzing file: 'file.txt'.
+"""
