@@ -6,9 +6,9 @@ import os
 import pytest
 
 from wazuh_testing.tools.configuration import load_wazuh_configurations
-import wazuh_testing.remote as remote
+import wazuh_testing.logcollector as logcollector
 import wazuh_testing.generic_callbacks as gc
-from wazuh_testing.tools import LOG_COLLECTOR_DETECTOR_PREFIX
+from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX
 # Marks
 pytestmark = pytest.mark.tier(level=0)
 
@@ -72,6 +72,10 @@ def test_log_format_valid(get_configuration, configure_environment, restart_logc
     if not cfg['valid']:
         pytest.skip('Invalid values provided')
 
+    log_callback = logcollector.callback_analyzing_file('log_format')
+    wazuh_log_monitor.start(timeout=5, callback=log_callback,
+                            error_message="The expected error output has not been produced")
+
     # Check API response and log format analysing file
     assert 1
 
@@ -95,35 +99,4 @@ def test_log_format_invalid(get_configuration, configure_environment, restart_lo
     log_callback = gc.callback_error_in_configuration('CRITICAL', LOG_COLLECTOR_DETECTOR_PREFIX)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
-
-
-"""
-2021/03/15 11:09:46 wazuh-logcollector: INFO: (1950): Analyzing file: 'file.txt'.
-"""
-
-"""
-2021/03/15 12:39:49 wazuh-logcollector: ERROR: (1235): Invalid value for element 'log_format': invalid.
-2021/03/15 12:39:49 wazuh-logcollector: ERROR: (1202): Configuration error at '/var/ossec/etc/ossec.conf'.
-2021/03/15 12:39:49 wazuh-logcollector: CRITICAL: (1202): Configuration error at '/var/ossec/etc/ossec.conf'.
-"""
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
