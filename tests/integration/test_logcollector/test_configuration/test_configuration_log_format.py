@@ -7,8 +7,8 @@ import pytest
 
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 import wazuh_testing.remote as remote
-import wazuh_testing.generic_callbacks
-
+import wazuh_testing.generic_callbacks as gc
+from wazuh_testing.tools import LOG_COLLECTOR_DETECTOR_PREFIX
 # Marks
 pytestmark = pytest.mark.tier(level=0)
 
@@ -84,15 +84,15 @@ def test_log_format_invalid(get_configuration, configure_environment, restart_lo
     if cfg['valid']:
         pytest.skip('Valid values provided')
 
-    log_callback = generic_callbacks.callback_invalid_value('log_format', cfg['log_format'])
+    log_callback = gc.callback_invalid_value('log_format', cfg['log_format'], LOG_COLLECTOR_DETECTOR_PREFIX)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
-    log_callback = generic_callbacks.callback_error_in_configuration('ERROR')
+    log_callback = gc.callback_error_in_configuration('ERROR', LOG_COLLECTOR_DETECTOR_PREFIX)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
-    log_callback = generic_callbacks.callback_error_in_configuration('CRITICAL')
+    log_callback = gc.callback_error_in_configuration('CRITICAL', LOG_COLLECTOR_DETECTOR_PREFIX)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
