@@ -6,7 +6,7 @@
   - section: localfile
     elements:
     - command:
-        - COMMAND
+        value: COMMAND
     - location:
         value: LOCATION
     -  log_format:

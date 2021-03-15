@@ -84,18 +84,18 @@ def test_log_format_valid(get_configuration, configure_environment, restart_logc
         log_callback = logcollector.callback_analyzing_file(cfg['location'])
         wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                 error_message="The expected error output has not been produced")
-    elif 'command' in cfg['log_format']
+    elif 'command' in cfg['log_format']:
 
         log_callback = logcollector.callback_monitoring_command(cfg['location'])
         wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                 error_message="The expected error output has not been produced")
 
-    elif cfg['log_format'] == 'djb-multilog'
+    elif cfg['log_format'] == 'djb-multilog':
 
         log_callback = logcollector.callback_monitoring_djb_multilog(cfg['location'])
         wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                 error_message="The expected error output has not been produced")
-        
+
     # Check API response and log format analysing file
 
 
