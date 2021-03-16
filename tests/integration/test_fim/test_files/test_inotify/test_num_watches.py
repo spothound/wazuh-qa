@@ -8,7 +8,7 @@ import sys
 
 import pytest
 from wazuh_testing import global_parameters
-from wazuh_testing.fim import LOG_FILE_PATH, callback_num_inotify_watches, generate_params, detect_initial_scan
+from wazuh_testing.fim import LOG_FILE_PATH, callback_num_inotify_watches, callback_detect_end_scan, generate_params, detect_initial_scan
 from wazuh_testing.tools import PREFIX
 from wazuh_testing.tools.configuration import load_wazuh_configurations, check_apply_test
 from wazuh_testing.tools.file import truncate_file
@@ -111,6 +111,13 @@ def test_num_watches(realtime_enabled, decreases_num_watches, rename_folder, get
     if ((get_configuration['metadata']['fim_mode'] == "scheduled" and realtime_enabled) or
             (get_configuration['metadata']['fim_mode'] == "realtime" and not realtime_enabled)):
         pytest.skip("Does not apply to this config file")
+
+    # wait until the second scan
+    wazuh_log_monitor.start(timeout=40,
+                            callback=callback_detect_end_scan,
+                            error_message='Did not receive expected '
+                                          '"Real-time file integrity monitoring started." event'
+                            ).result()
 
     # Check that the number of inotify watches is correct before modifying the folder
     try:
