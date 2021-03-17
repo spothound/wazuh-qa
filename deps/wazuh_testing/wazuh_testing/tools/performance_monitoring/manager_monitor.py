@@ -29,7 +29,8 @@ logger = logging.getLogger('manager_monitor')
 logger.setLevel(logging.ERROR)
 logger.addHandler(logging.StreamHandler())
 
-DEFAULT_DATA_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'manager_monitor.csv')
+CURRENT_WORKDIR = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_DATA_FILE_PATH = os.path.join(CURRENT_WORKDIR, 'manager_monitor.csv')
 
 STATE_FILES_PATH = os.path.join('/var', 'ossec', 'var', 'run')
 ANALYSYSD_STATE = os.path.join(STATE_FILES_PATH, 'wazuh-analysisd.state')
@@ -37,11 +38,18 @@ REMOTED_STATE = os.path.join(STATE_FILES_PATH, 'wazuh-remoted.state')
 
 
 def get_state_stat(file, stat):
-    with subprocess.Popen(['grep', stat, file], stdout=subprocess.PIPE) as p1:
-        with subprocess.Popen(['tail', '-n', '1'], stdin=p1.stdout, stdout=subprocess.PIPE) as p2:
-            data = p2.stdout.read().decode('utf-8')
+    # It is necessary to use an auxiliary process to obtain the information because ansible captures all the output
+    # and it is not possible to share this output between processes.
+    subprocess.run(f"bash {CURRENT_WORKDIR}/get_stat.sh {file} {stat}", shell=True)
+
+    aux_data_file = f"{CURRENT_WORKDIR}/tmp.txt"
+
+    with open(aux_data_file) as stat_info:
+        data = stat_info.read()
 
     data = data.split('=')[1].replace("'", '').replace('\n', '')
+
+    os.remove(aux_data_file)
 
     return data
 

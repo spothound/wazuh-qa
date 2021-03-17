@@ -1,0 +1,13 @@
+- hosts: manager
+  gather_facts: False
+  become: True
+  tasks:
+
+    - name: Launch manager monitor
+      command: "python3 /home/ec2-user/manager_monitor.py -t {{ monitoring_time }} -m {{ measurement_time }} -v -f {{ output_csv_name }}"
+
+    - name: Fetching results
+      fetch:
+        src: "/home/ec2-user/{{ output_csv_name }}"
+        dest: "{{ data_folder }}/"
+        flat: yes
