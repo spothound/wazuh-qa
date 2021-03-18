@@ -19,6 +19,7 @@ Script to monitor the following manager resources at the specified time:
 - EVENTS DROPPED
 - REMOTED DISCARD COUNT
 - REMOTED TCP SESSIONS
+- REMOTED RECV_BYTES
 
 Displays data on screen and stores them in a CSV file.
 
@@ -29,8 +30,7 @@ logger = logging.getLogger('manager_monitor')
 logger.setLevel(logging.ERROR)
 logger.addHandler(logging.StreamHandler())
 
-CURRENT_WORKDIR = os.path.dirname(os.path.abspath(__file__))
-DEFAULT_DATA_FILE_PATH = os.path.join(CURRENT_WORKDIR, 'manager_monitor.csv')
+DEFAULT_DATA_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'manager_monitor.csv')
 
 STATE_FILES_PATH = os.path.join('/var', 'ossec', 'var', 'run')
 ANALYSYSD_STATE = os.path.join(STATE_FILES_PATH, 'wazuh-analysisd.state')
@@ -38,52 +38,54 @@ REMOTED_STATE = os.path.join(STATE_FILES_PATH, 'wazuh-remoted.state')
 
 
 def get_state_stat(file, stat):
-    # It is necessary to use an auxiliary process to obtain the information because ansible captures all the output
-    # and it is not possible to share this output between processes.
-    subprocess.run(f"bash {CURRENT_WORKDIR}/get_stat.sh {file} {stat}", shell=True)
-
-    aux_data_file = f"{CURRENT_WORKDIR}/tmp.txt"
-
-    with open(aux_data_file) as stat_info:
-        data = stat_info.read()
+    with subprocess.Popen(['grep', stat, file], stdout=subprocess.PIPE) as p1:
+        with subprocess.Popen(['tail', '-n', '1'], stdin=p1.stdout, stdout=subprocess.PIPE) as p2:
+            data = p2.stdout.read().decode('utf-8')
 
     data = data.split('=')[1].replace("'", '').replace('\n', '')
-
-    os.remove(aux_data_file)
 
     return data
 
 
 def write_headers(file):
     with open(file, 'w') as f:
-        f.write('timestamp, cpu_usage, mem_usage, mem_percent, events_edps, events_dropped, remoted_discard_count, '
-                'remoted_tcp_sessions\n')
+        f.write('timestamp, cpu_usage, mem_usage, mem_percent, events_edps, events_dropped, remoted_bytes_rcv_ps, ' \
+                'remoted_discard_count, remoted_tcp_sessions\n')
 
 
 def write_data(file, data):
     with open(file, 'a') as f:
-        f.write(f"{datetime.now()}, {data[0]}, {data[1]}, {data[2]}, {data[3]}, {data[4]}, {data[5]}, {data[6]}\n")
+        f.write(f"{datetime.now()}, {data[0]}, {data[1]}, {data[2]}, {data[3]}, {data[4]}, {data[5]}, {data[6]}, " \
+                f"{data[7]}\n")
 
 
 def monitor(file, measurement_time):
     logger.info('Starting monitor...')
+    logger.info('timestamp -- cpu_usage -- mem_usage --mem_percent --events_edps -- events_dropped -- ' \
+                'remoted_bytes_received_per_second -- remoted_discard_count -- remoted_tcp_sessions')
+    initial_bytes_rcv = get_state_stat(REMOTED_STATE, 'recv_bytes')
 
     while True:
         cpu_info = round(psutil.cpu_percent())
         memory_info = psutil.virtual_memory()
-        memory_usage = round(memory_info.used / 1048576)
+        memory_usage = round(memory_info.used / 1048576)  # Convert from bytes to MB
         memory_usage_percent = round(memory_info.percent)
 
         events_edps = get_state_stat(ANALYSYSD_STATE, 'events_edps')
         events_dropped = get_state_stat(ANALYSYSD_STATE, 'events_dropped')
+        remoted_bytes_rcv = get_state_stat(REMOTED_STATE, 'recv_bytes')
         remoted_discard_count = get_state_stat(REMOTED_STATE, 'discarded_count')
         remoted_tcp_sessions = get_state_stat(REMOTED_STATE, 'tcp_sessions')
 
-        data = (cpu_info, memory_usage, memory_usage_percent, events_edps, events_dropped, remoted_discard_count,
-                remoted_tcp_sessions)
+        remoted_bytes_rcv_ps = round((int(remoted_bytes_rcv) - int(initial_bytes_rcv)) / measurement_time)
+        initial_bytes_rcv = remoted_bytes_rcv
+
+        data = (cpu_info, memory_usage, memory_usage_percent, events_edps, events_dropped, remoted_bytes_rcv_ps,
+                remoted_discard_count, remoted_tcp_sessions)
 
         logger.info(f"{datetime.now()} -- {cpu_info} -- {memory_usage} -- {memory_usage_percent} -- {events_edps}"
-                    f" -- {events_dropped} -- {remoted_discard_count} -- {remoted_tcp_sessions}")
+                    f" -- {events_dropped} -- {remoted_bytes_rcv_ps} -- {remoted_discard_count} -- "
+                    f"{remoted_tcp_sessions}")
 
         write_data(file, data)
 
@@ -125,3 +127,4 @@ if __name__ == '__main__':
     sleep(monitoring_time)
 
     proc.terminate()
+
