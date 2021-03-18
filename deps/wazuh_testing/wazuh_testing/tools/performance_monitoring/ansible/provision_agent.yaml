@@ -1,0 +1,56 @@
+---
+
+- hosts: agent
+  gather_facts: False
+  become: True
+  vars:
+    qa_dir: "/home/ec2-user/wazuh_qa"
+  tasks:
+    - name: Copy files to the agent
+      copy:
+        src: "{{ item }}"
+        dest: /home/ec2-user
+      with_items:
+        - "../deps.sh"
+        - "../agent_monitor.py"
+        - "../average.py"
+        - "../app_monitor.py"
+        - "../event_generator.py"
+
+    - name: Set scripts permissions
+      command: "chmod +x /home/ec2-user/deps.sh"
+
+    - name: Installing agent deps
+      command: "bash /home/ec2-user/deps.sh"
+
+    - name: Create new dir to store qa repository
+      file:
+        path: "{{ qa_dir }}"
+        state: directory
+
+    - name: clone wazuh-qa repository
+      git:
+        repo: "https://github.com/wazuh/wazuh-qa.git"
+        dest: "{{ qa_dir }}"
+        version: "master"
+        depth: 1
+      register: clone_result
+      retries: 3
+      delay: 10
+      until: clone_result is success
+
+    - name: Upgrade pip
+      pip:
+        name: pip
+        state: latest
+        executable: "/bin/pip3"
+
+    - name: Install python QA dependencies
+      command: "/usr/local/bin/pip3 install -r requirements.txt --no-cache-dir --upgrade --only-binary=:cryptography,grpcio:"
+      args:
+        chdir: "{{ qa_dir }}"
+
+    - name: Install setup.py
+      command: "/bin/python3 setup.py install"
+      args:
+        chdir: "{{ qa_dir }}/deps/wazuh_testing"

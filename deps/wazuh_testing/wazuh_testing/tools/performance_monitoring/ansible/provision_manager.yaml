@@ -1,0 +1,34 @@
+---
+
+- hosts: manager
+  gather_facts: False
+  become: True
+  tasks:
+    - name: Copy files to the manager
+      copy:
+        src: "{{ item }}"
+        dest: /home/ec2-user
+      with_items:
+        - "../deps.sh"
+        - "../get_stat.sh"
+        - "../average.py"
+        - "../manager_monitor.py"
+        - "../wazuh-manager.rpm"
+
+    - name: Set scripts permissions
+      command: "{{ item }}"
+      with_items:
+        - "chmod +x /home/ec2-user/deps.sh"
+        - "chmod +x /home/ec2-user/get_stat.sh"
+
+    - name: Installing manager deps
+      command: "bash /home/ec2-user/deps.sh"
+
+    - name: Installing wazuh
+      command: "rpm -ivh /home/ec2-user/wazuh-manager.rpm"
+
+    - name: Start wazuh manager
+      command: "systemctl start wazuh-manager"
+
+    - name: Start wazuh manager
+      command: "systemctl start wazuh-manager"
