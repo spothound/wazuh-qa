@@ -28,7 +28,7 @@ if __name__ == "__main__":
     df = pd.read_csv(file, sep=",")
     df.columns = df.columns.str.strip()
 
-    # Eliminates manager rows that do not exceed the established limit.
+    # Eliminates rows that do not exceed the established limit.
     if 'events_edps' in df.columns:
         df = df[df.events_edps > lower_limit]
 

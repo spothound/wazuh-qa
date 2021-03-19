@@ -1,10 +1,11 @@
 [manager]
-172.31.70.134
+172.31.66.164
 
 [agent]
-172.31.65.67
+172.31.65.201
 
 [all:vars]
 ansible_ssh_user=ec2-user
 ansible_ssh_private_key_file=~/Documents/credentials/aws_private_key/tf_instances.pem
-ansible_python_interpreter=/bin/python3
+ansible_python_interpreter=/bin/python
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'

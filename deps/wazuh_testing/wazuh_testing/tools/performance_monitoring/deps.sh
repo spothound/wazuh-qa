@@ -1,6 +1,6 @@
 #!/bin/bash
 
-yum install make gcc policycoreutils-python automake autoconf libtool epel-release git which sudo wget htop -y
+yum install make gcc policycoreutils-python automake autoconf libtool epel-release git which sudo wget git htop -y
 
 yum groupinstall "Development Tools" -y
 

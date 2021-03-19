@@ -5,7 +5,7 @@
   become: True
   tasks:
 
-    - name: Launch agent monitor
+    - name: Launch agent event generator and monitor
       command: "python3 /home/ec2-user/app_monitor.py -a {{ manager_address }} -t {{ monitoring_time }} -v -n {{ agents_number }} -e {{ eps }} -m {{ measurement_time }} -p {{ protocol }} -f {{ output_csv_name }}"
 
     - name: Fetching results

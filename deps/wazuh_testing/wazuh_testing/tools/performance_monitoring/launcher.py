@@ -77,6 +77,7 @@ if __name__ == "__main__":
 
     # Calculate mean of manager and agent data
     average_script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'average.py')
+    plot_script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'plot.py')
 
     manager_mean_command = f"python3 {average_script_path} -f {files_path}/{manager_output_csv_name} -w -o " \
                            f"manager_mean_n{agents_number}_e{eps}.txt"
@@ -85,3 +86,12 @@ if __name__ == "__main__":
 
     run_command(manager_mean_command)
     run_command(agent_mean_command)
+
+    # Plot manager EPS
+    plot_script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'plot.py')
+    plot_file_name = f"manager_n{agents_number}_e{eps}.png"
+
+    plot_command = f"python3 {plot_script_path} -f {files_path}/{manager_output_csv_name} -o " \
+                   f"{files_path}/{plot_file_name}"
+
+    run_command(plot_command)

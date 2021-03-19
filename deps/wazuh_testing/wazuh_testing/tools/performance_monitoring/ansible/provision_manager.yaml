@@ -11,6 +11,7 @@
       with_items:
         - "../deps.sh"
         - "../get_stat.sh"
+        - "../truncate.sh"
         - "../average.py"
         - "../manager_monitor.py"
         - "../wazuh-manager.rpm"
@@ -20,6 +21,7 @@
       with_items:
         - "chmod +x /home/ec2-user/deps.sh"
         - "chmod +x /home/ec2-user/get_stat.sh"
+        - "chmod +x /home/ec2-user/truncate.sh"
 
     - name: Installing manager deps
       command: "bash /home/ec2-user/deps.sh"
@@ -32,3 +34,8 @@
 
     - name: Start wazuh manager
       command: "systemctl start wazuh-manager"
+
+    - name: Add truncate job to crontab
+      cron:
+        name: "Truncate wazuh alerts alerts"
+        job: "/home/ec2-user/truncate.sh"
