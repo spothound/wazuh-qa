@@ -20,7 +20,7 @@ import ssl
 import threading
 import zlib
 from datetime import date
-from random import randint, sample, choice, random, getrandbits
+from random import randint, sample, choice, getrandbits
 from stat import S_IFLNK, S_IFREG, S_IRWXU, S_IRWXG, S_IRWXO
 from string import ascii_letters, digits
 from struct import pack
@@ -577,11 +577,7 @@ class Agent:
         except UnboundLocalError:
             logging.critical("Error creating keep alive for the agent. Check if the OS is in the keepalives.txt")
 
-        if self.labels:
-            msg_as_list = msg.split('\n')
-            for key, value in self.labels.items():
-                msg_as_list.insert(1, f'"{key}":{value}')
-            msg = '\n'.join(msg_as_list)
+        msg = self.add_labels_message(msg)
 
         self.keep_alive_event = self.create_event(msg)
         self.keep_alive_raw_msg = msg
@@ -660,6 +656,16 @@ class Agent:
 
     def set_module_attribute(self, module_name, attribute, value):
         self.modules[module_name][attribute] = value
+
+    def add_labels_message(self, message):
+        if self.labels:
+            msg_as_list = message.split('\n')
+            for key, value in self.labels.items():
+                msg_as_list.append( f'"{key}":{value}')
+            msg = '\n'.join(msg_as_list)
+            return msg
+        else:
+            return message
 
 
 class GeneratorSyscollector:
@@ -1282,7 +1288,6 @@ class InjectorThread(threading.Thread):
                   ((time() - start_time) %
                    self.agent.modules["keepalive"]["frequency"]))
 
-
     def run_module(self, module):
         """Send a module message from the agent to the manager.
          Args:
@@ -1328,7 +1333,7 @@ class InjectorThread(threading.Thread):
         while self.stop_thread == 0:
             sent_messages = 0
             while sent_messages < batch_messages:
-                event_msg = module_event_generator()
+                event_msg = self.agent.add_labels_message(module_event_generator())
                 event = self.agent.create_event(event_msg)
                 self.sender.send_event(event)
                 self.totalMessages += 1
