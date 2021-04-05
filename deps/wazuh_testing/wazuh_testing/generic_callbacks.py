@@ -1,7 +1,7 @@
 from wazuh_testing.tools import WAZUH_CONF
 from wazuh_testing.tools import monitoring
 
-def callback_invalid_value(option, value, wazuh_daemon):
+def callback_invalid_value(option, value, wazuh_daemon, severity='ERROR'):
     """Create a callback to detect invalid values in ossec.conf file.
 
     Args:
@@ -11,7 +11,7 @@ def callback_invalid_value(option, value, wazuh_daemon):
     Returns:
         callable: callback to detect this event.
     """
-    msg = fr"ERROR: \(\d+\): Invalid value for element '{option}': {value}."
+    msg = fr"{severity}: \(\d+\): Invalid value for element '{option}': {value}."
     return monitoring.make_callback(pattern=msg, prefix=wazuh_daemon)
 
 

@@ -8,6 +8,7 @@ import time
 from base64 import b64encode
 
 import requests
+
 from urllib3 import disable_warnings, exceptions
 disable_warnings(exceptions.InsecureRequestWarning)
 
@@ -127,24 +128,38 @@ def get_manager_configuration(section=None, field=None):
     assert response.json()['error'] == 0, f"Wazuh API response status different from 0: {response.json()}"
     answer = response.json()['data']['affected_items'][0]
 
-    if section is not None:
-        answer = answer[section]
-        if isinstance(answer, list) and len(answer) == 1:
-            answer = answer[0]
-        if field is not None:
-            answer = answer[field]
-    return answer
+    def get_requested_values(answer, section, field):
+        """ Return requested value from API response
 
-def compare_config_api_response(configuration,section):
-    """Assert if configuration values provided are the same that configuration provided for API response.
+        Received a section and a field and tries to return all available values that match with this entry.
+        This function is required because, sometimes, there may be multiple entries with the same field or section
+        and the API will return a list instead of a map. Using recursion we make sure that the output matches
+        the user expectations.
+        """
+        if isinstance(answer, list):
+            new_answer = []
+            for element in answer:
+                new_answer.append(get_requested_values(element, section, field))
+            return new_answer
+        elif isinstance(answer, dict):
+            if section in answer.keys():
+                new_answer = answer[section]
+                return get_requested_values(new_answer, section, field)
+            if field in answer.keys():
+                new_answer = answer[field]
+                return get_requested_values(new_answer, section, field)
+        return answer
 
-    Args:
-        configuration (dict): Dictionary with wazuh manager configuration.
-    """
-    # Check that API query return the selected configuration
-    for field in configuration.keys():
-        api_answer = get_manager_configuration(section=section, field=field)
-        if field == 'protocol':
-            assert all(map(lambda x, y: x == y, configuration[field].split(","), api_answer))
+    return get_requested_values(answer, section, field)
+
+
+def wait_until_api_ready(protocol=API_PROTOCOL, host=API_HOST, port=API_PORT, user=API_USER, password=API_PASS,
+                         login_endpoint=API_LOGIN_ENDPOINT, timeout=10):
+    api_ready = False
+    while timeout > 0 and not api_ready:
+        try:
+            get_token_login_api(protocol, host, port, user, password, login_endpoint, timeout)
+        except requests.exceptions.ConnectionError:
+            time.sleep(1)
         else:
-            assert configuration[field] == api_answer, "Wazuh API answer different from introduced configuration"
+            api_ready = True

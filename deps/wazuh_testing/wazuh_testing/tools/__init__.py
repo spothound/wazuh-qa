@@ -10,6 +10,7 @@ import subprocess
 if sys.platform == 'win32':
     WAZUH_PATH = os.path.join("C:", os.sep, "Program Files (x86)", "ossec-agent")
     WAZUH_CONF = os.path.join(WAZUH_PATH, 'ossec.conf')
+    WAZUH_LOCAL_INTERNAL_OPTIONS = os.path.join(WAZUH_PATH, 'local_internal_options.conf')
     WAZUH_SOURCES = os.path.join('/', 'wazuh')
     LOG_FILE_PATH = os.path.join(WAZUH_PATH, 'ossec.log')
     PREFIX = os.path.join('c:', os.sep)
@@ -17,6 +18,10 @@ if sys.platform == 'win32':
     WAZUH_API_CONF = None
     WAZUH_SECURITY_CONF = None
     API_LOG_FILE_PATH = None
+    AGENT_STATISTICS_FILE = os.path.join(WAZUH_PATH, 'wazuh-agent.state')
+    LOGCOLLECTOR_STATISTICS_FILE = os.path.join(WAZUH_PATH, 'wazuh-logcollector.state')
+    REMOTE_STATISTICS_FILE = None
+    ANALYSIS_STATISTICS_FILE = None
 
 else:
 
@@ -31,12 +36,18 @@ else:
         GEN_OSSEC = os.path.join(WAZUH_SOURCES, 'gen_ossec.sh')
         PREFIX = os.sep
 
-    WAZUH_CONF = os.path.join(WAZUH_PATH, 'etc', 'ossec.conf')
+    WAZUH_CONF_RELATIVE = os.path.join('etc', 'ossec.conf')
+    WAZUH_LOCAL_INTERNAL_OPTIONS = os.path.join(f'{WAZUH_PATH}/etc', 'local_internal_options.conf')
+    WAZUH_CONF = os.path.join(WAZUH_PATH, WAZUH_CONF_RELATIVE)
     WAZUH_API_CONF = os.path.join(WAZUH_PATH, 'api', 'configuration', 'api.yaml')
     WAZUH_SECURITY_CONF = os.path.join(WAZUH_PATH, 'api', 'configuration', 'security', 'security.yaml')
     LOG_FILE_PATH = os.path.join(WAZUH_PATH, 'logs', 'ossec.log')
     API_LOG_FILE_PATH = os.path.join(WAZUH_PATH, 'logs', 'api.log')
     ARCHIVES_LOG_FILE_PATH = os.path.join(WAZUH_PATH, 'logs', 'archives', 'archives.log')
+    AGENT_STATISTICS_FILE = os.path.join(WAZUH_PATH, 'var', 'run', 'wazuh-agentd.state')
+    LOGCOLLECTOR_STATISTICS_FILE = os.path.join(WAZUH_PATH, 'var', 'run', 'wazuh-logcollector.state')
+    REMOTE_STATISTICS_FILE = os.path.join(WAZUH_PATH, 'var', 'run', 'wazuh-remoted.state')
+    ANALYSIS_STATISTICS_FILE = os.path.join(WAZUH_PATH, 'var', 'run', 'wazuh-analysisd.state')
 
     try:
         import grp
