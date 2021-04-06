@@ -178,7 +178,11 @@ class Agent:
         self.stage_disconnect = None
         self.setup(disable_all_modules=disable_all_modules)
         self.rcv_msg_queue = Queue(rcv_msg_limit)
+<<<<<<< HEAD
         self.fixed_message_size = fixed_message_size * 1024 if fixed_message_size is not None else None
+=======
+        self.fixed_message_size = fixed_message_size * 1024
+>>>>>>> 23824638 (Apply PR review requested changes)
 
     def update_checksum(self, new_checksum):
         self.keep_alive_raw_msg = self.keep_alive_raw_msg.replace(self.merged_checksum, new_checksum)
@@ -1639,10 +1643,9 @@ class InjectorThread(threading.Thread):
                 event_msg = module_event_generator()
                 if self.agent.fixed_message_size is not None:
                     event_msg_size = getsizeof(event_msg)
-                    fixed_message_size_bytes = self.agent.fixed_message_size * 1024
-                    dummy_message_size = fixed_message_size_bytes - event_msg_size
+                    dummy_message_size = self.agent.fixed_message_size - event_msg_size
                     char_size = getsizeof(event_msg[0]) - getsizeof('')
-                    event_msg += 'A' * int(dummy_message_size/char_size)
+                    event_msg += 'A' * dummy_message_size//char_size
 
                 event = self.agent.create_event(event_msg)
                 self.sender.send_event(event)
