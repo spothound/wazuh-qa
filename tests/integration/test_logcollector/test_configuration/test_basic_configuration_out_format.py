@@ -129,6 +129,6 @@ def test_configuration_query_invalid(get_configuration, configure_environment, r
     if cfg['valid_value']:
         pytest.skip('Invalid values provided')
 
-    log_callback = logcollector.callback_log_target_not_found(cfg['location'], cfg['target'])
+    log_callback = logcollector.callback_log_target_not_found(cfg['location'], cfg['target_out_format'])
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                 error_message="The expected error output has not been produced")

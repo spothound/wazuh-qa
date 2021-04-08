@@ -58,7 +58,7 @@ def get_configuration(request):
     return request.param
 
 
-def test_configuration_age_valid(get_configuration, configure_environment, restart_logcollector):
+def test_configuration_reconnect_time_valid(get_configuration, configure_environment, restart_logcollector):
     """
     """
     cfg = get_configuration['metadata']
@@ -71,7 +71,7 @@ def test_configuration_age_valid(get_configuration, configure_environment, resta
             assert str(cfg[field]) in str(api_answer[field]), "Wazuh API answer different from introduced configuration"
 
 
-def test_configuration_age_invalid(get_configuration, configure_environment, restart_logcollector):
+def test_configuration_reconnect_time_invalid(get_configuration, configure_environment, restart_logcollector):
     """
     """
     cfg = get_configuration['metadata']
