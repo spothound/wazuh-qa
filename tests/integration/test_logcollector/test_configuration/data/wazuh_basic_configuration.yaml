@@ -135,3 +135,32 @@
          value: LOG_FORMAT
     - reconnect_time:
          value: RECONNECT_TIME
+
+- tags:
+  - test_basic_configuration_query
+  apply_to_modules:
+  - test_basic_configuration_query
+  sections:
+  - section: localfile
+    elements:
+    - location:
+        value: 'Security'
+    - log_format:
+         value: LOG_FORMAT
+    - reconnect_time:
+         value: QUERY
+
+- tags:
+  - test_basic_configuration_label
+  apply_to_modules:
+  - test_basic_configuration_label
+  sections:
+  - section: localfile
+    elements:
+    - location:
+        value: "/tmp/file.log"
+    - log_format:
+         value: "json"
+    - label:
+         value: LABEL
+         key: KEY

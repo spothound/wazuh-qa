@@ -18,27 +18,21 @@ test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
 
 parameters = [
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing/*', 'EXCLUDE': '/tmp/testing/file.txt'},
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing/*', 'EXCLUDE': '/tmp/testing/f*'},
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing/*', 'EXCLUDE': '/tmp/testing/*g'},
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing/*', 'EXCLUDE': '/tmp/testing/file?.txt'},
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing/*', 'EXCLUDE': '/tmp/testing/file.log-%Y-%m-%d'},
+    {'LOG_FORMAT': 'eventchannel', 'QUERY': 'Event[System/EventID = 4624 and '
+                                            '(EventData/Data[@Name=\'LogonType\'] = 2 or '
+                                            'EventData/Data[@Name=\'LogonType\'] = 10)]'
+    }
 ]
-
 metadata = [
-    {'log_format': 'syslog', 'location': '/tmp/testing/*', 'exclude': '/tmp/testing/file.txt', 'valid_value': True},
-    {'log_format': 'syslog', 'location': '/tmp/testing/*', 'exclude': '/tmp/testing/f*', 'valid_value': True},
-    {'log_format': 'syslog', 'location': '/tmp/testing/*', 'exclude': '/tmp/testing/*g', 'valid_value': True},
-    {'log_format': 'syslog', 'location': '/tmp/testing/*', 'exclude': '/tmp/testing/file?.txt', 'valid_value': True},
-    {'log_format': 'syslog', 'location': '/tmp/testing/*', 'exclude': '/tmp/testing/file.log-%Y-%m-%d',
-     'valid_value': True},
-
+    {'log_format': 'eventchannel', 'query': 'Event[System/EventID = 4624 and '
+                                            '(EventData/Data[@Name=\'LogonType\'] = 2 or '
+                                            'EventData/Data[@Name=\'LogonType\'] = 10)]', 'valid_value': True},
 ]
 
 configurations = load_wazuh_configurations(configurations_path, __name__,
                                            params=parameters,
                                            metadata=metadata)
-configuration_ids = [f"{x['LOG_FORMAT'], x['LOCATION'], x['EXCLUDE']}" for x in parameters]
+configuration_ids = [f"{x['LOG_FORMAT'], x['QUERY']}" for x in parameters]
 
 
 # fixtures
@@ -48,7 +42,7 @@ def get_configuration(request):
     return request.param
 
 
-def test_configuration_frequency_valid(get_configuration, configure_environment, restart_logcollector):
+def test_configuration_query_valid(get_configuration, configure_environment, restart_logcollector):
     """
     """
     cfg = get_configuration['metadata']
@@ -61,7 +55,7 @@ def test_configuration_frequency_valid(get_configuration, configure_environment,
             assert str(cfg[field]) in str(api_answer[field]), "Wazuh API answer different from introduced configuration"
 
 
-def test_configuration_frequency_invalid(get_configuration, configure_environment, restart_logcollector):
+def test_configuration_query_invalid(get_configuration, configure_environment, restart_logcollector):
     """
     """
     cfg = get_configuration['metadata']

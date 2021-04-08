@@ -192,7 +192,7 @@ def set_section_wazuh_conf(sections, template=None):
         Args:
             section (ET.Element): Section where the element will be inserted.
             elements (list): List with the new elements to be inserted.
-        Returns:
+        Returns:    
             ET.ElementTree: Modified Wazuh configuration.
         """
         tag = None
