@@ -1313,6 +1313,7 @@ class GeneratorFIM:
         self.random_sha256()
         self.random_time()
         self.random_inode()
+        self._checksum = self.random_sha1()
 
     def check_changed_attributes(self, attributes, old_attributes):
         """Returns attributes that have changed. """
@@ -1368,7 +1369,7 @@ class GeneratorFIM:
             string: generated message with the required FIM header.
         """
         if self.agent_version >= "3.12":
-            formated_message = f"{self.syscheck_mq}:[{self.agent_id}] ({message})"
+            formated_message = f"{self.syscheck_mq}:({self.agent_id}) any->syscheck:{message}"
         else:
             # If first time generating. Send control message to simulate
             # end of FIM baseline.
@@ -1600,7 +1601,6 @@ class InjectorThread(threading.Thread):
 
         sleep(10)
         start_time = time()
-
         if frequency > 1:
             batch_messages = eps * 0.5 * frequency
         else:
@@ -1674,7 +1674,7 @@ class InjectorThread(threading.Thread):
             self.stop_thread = 1
 
 
-def create_agents(agents_number, manager_address, cypher='aes', fim_eps=None, authd_password=None, agents_os=None,
+def create_agents(agents_number, manager_address, cypher='aes', fim_eps=100, authd_password=None, agents_os=None,
                   agents_version=None, disable_all_modules=False):
     """Create a list of generic agents
 
@@ -1689,6 +1689,7 @@ def create_agents(agents_number, manager_address, cypher='aes', fim_eps=None, au
         agents_os (list, optional): list containing different operative systems for the agents.
         agents_version (list, optional): list containing different version of the agent.
         disable_all_modules (boolean): Disable all simulated modules for this agent.
+
     Returns:
         list: list of the new virtual agents.
     """
@@ -1709,6 +1710,7 @@ def create_agents(agents_number, manager_address, cypher='aes', fim_eps=None, au
 
 def connect(agent,  manager_address='localhost', protocol=TCP, manager_port='1514'):
     """Connects an agent to the manager
+
     Args:
         agent (Agent): agent to connect.
         manager_address (str): address of the manager. It can be an IP or a DNS.
