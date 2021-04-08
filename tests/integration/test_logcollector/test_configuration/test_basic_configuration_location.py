@@ -5,10 +5,8 @@
 import os
 import pytest
 import wazuh_testing.api as api
-import wazuh_testing.logcollector as logcollector
 from wazuh_testing.tools.configuration import load_wazuh_configurations
-from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX
-import wazuh_testing.generic_callbacks as gc
+
 
 # Marks
 pytestmark = pytest.mark.tier(level=0)

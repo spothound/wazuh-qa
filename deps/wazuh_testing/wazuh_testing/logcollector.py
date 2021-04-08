@@ -20,3 +20,18 @@ def callback_monitoring_djb_multilog(program_name, multilog_file):
 def callback_command_alias_output(alias):
     msg = fr"Reading command message: 'ossec: output: '{alias}':"
     return monitoring.make_callback(pattern=msg, prefix=monitoring.LOG_COLLECTOR_DETECTOR_PREFIX)
+
+
+def callback_query_bad_format(event_location):
+    msg = fr"ERROR: Could not EvtSubscribe() for ({event_location}) which returned \(\d+\)"
+    return monitoring.make_callback(pattern=msg, prefix=monitoring.LOG_COLLECTOR_DETECTOR_PREFIX)
+
+
+def callback_socket_target(location, socket_name):
+    msg = fr"DEBUG: Socket target for '{location}' -> {socket_name}"
+    return monitoring.make_callback(pattern=msg, prefix=monitoring.LOG_COLLECTOR_DETECTOR_PREFIX)
+
+
+def callback_socket_not_defined(location, socket_name):
+    msg = fr"CRITICAL: Socket '{socket_name}' for '{location}' is not defined."
+    return monitoring.make_callback(pattern=msg, prefix=monitoring.LOG_COLLECTOR_DETECTOR_PREFIX)

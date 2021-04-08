@@ -26,7 +26,7 @@ parameters = [
 
 metadata = [
     {'location': '/tmp/test.txt', 'log_format': 'command', 'command': 'echo TESTING', 'alias': 'alias'},
-    {'location': '/tmp/test.txt', 'log_format': 'full_command', 'command': 'echo TESTING', 'alias': 'alias2 '}
+    {'location': '/tmp/test.txt', 'log_format': 'full_command', 'command': 'echo TESTING', 'alias': 'alias2'}
 ]
 
 

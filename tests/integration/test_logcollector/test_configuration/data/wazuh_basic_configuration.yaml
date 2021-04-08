@@ -165,3 +165,48 @@
          value: LABEL
          attributes:
          - key: KEY
+
+- tags:
+  - test_basic_configuration_target
+  apply_to_modules:
+  - test_basic_configuration_target
+  sections:
+  - section: socket
+    elements:
+      - name:
+         value: SOCKET_NAME
+      - location:
+         value: SOCKET_PATH
+  - section: localfile
+    elements:
+    - location:
+        value: LOCATION
+    - log_format:
+         value: LOG_FORMAT
+    - target:
+        value: TARGET
+
+
+- tags:
+  - test_basic_configuration_out_format
+  apply_to_modules:
+  - test_basic_configuration_out_format
+  sections:
+  - section: socket
+    elements:
+      - name:
+         value: SOCKET_NAME
+      - location:
+         value: SOCKET_PATH
+  - section: localfile
+    elements:
+    - location:
+        value: LOCATION
+    - log_format:
+         value: LOG_FORMAT
+    - target:
+        value: TARGET
+    - out_format:
+        value: OUT_FORMAT
+        attributes:
+          - target: TARGET_OUT_FORMAT
