@@ -50,6 +50,9 @@ parameters = [
     {'SOCKET_NAME': 'custom_socket', 'SOCKET_PATH': '/var/log/messages', 'LOCATION': "/tmp/testing.log",
      'LOG_FORMAT': 'syslog', 'TARGET': 'custom_socket', 'OUT_FORMAT': '$(host_ip)',
      'TARGET_OUT_FORMAT': 'custom_socket'},
+    {'SOCKET_NAME': 'custom_socket', 'SOCKET_PATH': '/var/log/messages', 'LOCATION': "/tmp/testing.log",
+     'LOG_FORMAT': 'syslog', 'TARGET': 'custom_socket', 'OUT_FORMAT': '$(host_ip)',
+     'TARGET_OUT_FORMAT': 'no_defined_custom_socket'},
 ]
 metadata = [
     {'socket_name': 'custom_socket', 'socket_path': '/var/log/messages', 'location': "/tmp/testing.log",
@@ -90,8 +93,8 @@ metadata = [
 configurations = load_wazuh_configurations(configurations_path, __name__,
                                            params=parameters,
                                            metadata=metadata)
-configuration_ids = [f"{x['LOG_FORMAT'], x['TARGET'], x['SOCKET_NAME'], x['LOCATION'],x['SOCKET_PATH']}"
-                     for x in parameters]
+configuration_ids = \
+    [f"{x['LOG_FORMAT'], x['TARGET'], x['SOCKET_NAME'], x['LOCATION'], x['SOCKET_PATH'], x['TARGET_OUT_FORMAT'], x['OUT_FORMAT']}" for x in parameters]
 
 
 # fixtures
@@ -110,7 +113,7 @@ def test_configuration_query_valid(get_configuration, configure_environment, res
 
 
     log_callback = logcollector.callback_socket_target(cfg['location'], cfg['target'])
-        wazuh_log_monitor.start(timeout=5, callback=log_callback,
+    wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                 error_message="The expected error output has not been produced")
 
     api_answer = api.get_manager_configuration(section='localfile')[0]
@@ -126,6 +129,6 @@ def test_configuration_query_invalid(get_configuration, configure_environment, r
     if cfg['valid_value']:
         pytest.skip('Invalid values provided')
 
-    log_callback = logcollector.callback_socket_not_defined(cfg['location'], cfg['target'])
-        wazuh_log_monitor.start(timeout=5, callback=log_callback,
+    log_callback = logcollector.callback_log_target_not_found(cfg['location'], cfg['target'])
+    wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                 error_message="The expected error output has not been produced")

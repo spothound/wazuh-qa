@@ -35,3 +35,8 @@ def callback_socket_target(location, socket_name):
 def callback_socket_not_defined(location, socket_name):
     msg = fr"CRITICAL: Socket '{socket_name}' for '{location}' is not defined."
     return monitoring.make_callback(pattern=msg, prefix=monitoring.LOG_COLLECTOR_DETECTOR_PREFIX)
+
+
+def callback_log_target_not_found(location, socket_name):
+    msg = fr"WARNING: Log target '{socket_name}' not found for the output format of localfile '{location}'."
+    return monitoring.make_callback(pattern=msg, prefix=monitoring.LOG_COLLECTOR_DETECTOR_PREFIX)
