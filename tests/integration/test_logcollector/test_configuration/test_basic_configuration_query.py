@@ -9,9 +9,15 @@ import wazuh_testing.logcollector as logcollector
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX
 import wazuh_testing.generic_callbacks as gc
+import sys
+
 
 # Marks
 pytestmark = pytest.mark.tier(level=0)
+
+
+if sys.platform != 'win32':
+    pytest.skip('Windows system is required for this test')
 
 # Configuration
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')

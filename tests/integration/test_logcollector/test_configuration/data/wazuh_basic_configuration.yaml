@@ -163,4 +163,5 @@
          value: "json"
     - label:
          value: LABEL
-         key: KEY
+         attributes:
+         - key: KEY

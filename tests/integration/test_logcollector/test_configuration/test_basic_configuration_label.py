@@ -19,9 +19,23 @@ configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.ya
 
 parameters = [
     {'LABEL': 'myapp', 'KEY': '@source'},
+    {'LABEL': 'myapp', 'KEY': 'agent.type'},
+    {'LABEL': 'myapp', 'KEY': 'agent.location'},
+    {'LABEL': 'myapp', 'KEY': 'agent.idgroup'},
+    {'LABEL': 'myapp', 'KEY': 'group.groupnname'},
+    {'LABEL': 'myapp', 'KEY': '109304'},
+    {'LABEL': 'myapp', 'KEY': 'TestingTagNames'},
+    {'LABEL': 'myapp', 'KEY': '?¿atag_tname'},
 ]
 metadata = [
     {'label': 'myapp', 'key': '@source'},
+    {'label': 'myapp', 'key': 'agent.type'},
+    {'label': 'myapp', 'key': 'agent.location'},
+    {'label': 'myapp', 'key': 'agent.idgroup'},
+    {'label': 'myapp', 'key': 'group.groupnname'},
+    {'label': 'myapp', 'key': '109304'},
+    {'label': 'myapp', 'key': 'TestingTagNames'},
+    {'label': 'myapp', 'key': '?¿atag_tname'}
 ]
 
 configurations = load_wazuh_configurations(configurations_path, __name__,
@@ -40,8 +54,11 @@ def get_configuration(request):
 def test_configuration_frequency_valid(get_configuration, configure_environment, restart_logcollector):
     """
     """
+    cfg = get_configuration['metadata']
+
     api_answer = api.get_manager_configuration(section='localfile')[0]
-    for field in cfg.keys():
-        if field != 'valid_value':
-            assert str(cfg[field]) in str(api_answer[field]), "Wazuh API answer different from introduced configuration"
+    api_label_key = str(api_answer['label']['key'])
+    api_label_item = str(api_answer['label']['item'])
+    assert cfg['label'] == api_label_item
+    assert cfg['key'] == api_label_key
 
