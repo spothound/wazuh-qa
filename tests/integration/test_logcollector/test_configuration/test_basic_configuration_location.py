@@ -37,23 +37,20 @@ if sys.platform == 'win32':
     ]
 
     metadata = [
-        {'location': 'Microsoft-Windows-Sysmon/Operational', 'log_format': 'eventchannel',
-         'valid_value': True},
-        {'location': 'Microsoft-Windows-Windows Firewall With Advanced Security/Firewall', 'log_format': 'eventchannel',
-         'valid_value': True},
-        {'location': 'Application', 'log_format': 'eventchannel', 'valid_value': True},
-        {'location': 'Security', 'log_format': 'eventchannel',  'valid_value': True},
-        {'location': 'System', 'log_format': 'eventchannel', 'valid_value': True},
-        {'location': 'Microsoft-Windows-Sysmon/Operational', 'log_format': 'eventchannel', 'valid_value': True},
-        {'location': 'Microsoft-Windows-Windows Defender/Operational', 'log_format': 'eventchannel', 'valid_value': True},
-        {'location': 'File Replication Service', 'log_format': 'eventchannel',  'valid_value': True},
+        {'location': 'Microsoft-Windows-Sysmon/Operational', 'log_format': 'eventchannel'},
+        {'location': 'Microsoft-Windows-Windows Firewall With Advanced Security/Firewall', 'log_format': 'eventchannel'},
+        {'location': 'Application', 'log_format': 'eventchannel'},
+        {'location': 'Security', 'log_format': 'eventchannel'},
+        {'location': 'System', 'log_format': 'eventchannel'},
+        {'location': 'Microsoft-Windows-Sysmon/Operational', 'log_format': 'eventchannel'},
+        {'location': 'Microsoft-Windows-Windows Defender/Operational', 'log_format': 'eventchannel'},
+        {'location': 'File Replication Service', 'log_format': 'eventchannel'},
         {'location': 'Service Microsoft-Windows-TerminalServices-RemoteConnectionManager',
-         'log_format': 'eventchannel',  'valid_value': True},
-        {'location': r'C:\Users\wazuh\myapp', 'log_format': 'syslog',
-         'valid_value': True},
-        {'location': r'C:\xampp\apache\logs\*.log', 'log_format': 'syslog', 'valid_value': True},
-        {'location': r'C:\logs\file-%Y-%m-%d.log', 'log_format': 'syslog', 'valid_value': True},
-        {'location': r'C:\Testing white spaces', 'log_format': 'syslog', 'valid_value': True},
+         'log_format': 'eventchannel'},
+        {'location': r'C:\Users\wazuh\myapp', 'log_format': 'syslog'},
+        {'location': r'C:\xampp\apache\logs\*.log', 'log_format': 'syslog'},
+        {'location': r'C:\logs\file-%Y-%m-%d.log', 'log_format': 'syslog'},
+        {'location': r'C:\Testing white spaces', 'log_format': 'syslog'},
         {'location': r'C:\FOLDER' '\\', 'log_format': 'json'},
     ]
 
@@ -70,10 +67,10 @@ else:
     ]
 
     metadata = [
-        {'location': '/tmp/test.txt', 'log_format': 'syslog', 'valid_value': True},
-        {'location': '/*', 'log_format': 'syslog', 'valid_value': True},
-        {'location': '/Testing white spaces', 'log_format': 'syslog', 'valid_value': True},
-        {'location': r'/tmp/%F%H%K%L/*', 'log_format': 'syslog', 'valid_value': True},
+        {'location': '/tmp/test.txt', 'log_format': 'syslog'},
+        {'location': '/*', 'log_format': 'syslog'},
+        {'location': '/Testing white spaces', 'log_format': 'syslog'},
+        {'location': r'/tmp/%F%H%K%L/*', 'log_format': 'syslog'},
         {'location': '/tmp/test.*', 'log_format': 'syslog'},
         {'location': '/tmp/c*test.txt', 'log_format': 'syslog'},
         {'location': '/tmp/?¿^*We.- Nmae', 'log_format': 'json'},
@@ -93,14 +90,11 @@ def get_configuration(request):
     return request.param
 
 
-def test_configuration_location_valid(get_configuration, configure_environment, restart_logcollector):
+def test_configuration_location(get_configuration, configure_environment, restart_logcollector):
     """
     """
     cfg = get_configuration['metadata']
-    if not cfg['valid_value']:
-        pytest.skip('Invalid values provided')
 
     api_answer = api.get_manager_configuration(section='localfile')[0]
     for field in cfg.keys():
-        if field != 'valid_value':
             assert str(cfg[field]) in str(api_answer[field]), "Wazuh API answer different from introduced configuration"
