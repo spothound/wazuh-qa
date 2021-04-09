@@ -3,6 +3,7 @@
 # This program is free software; you can redistribute it and/or modify it under the terms of GPLv2
 
 import os
+import sys
 import pytest
 import wazuh_testing.api as api
 import wazuh_testing.logcollector as logcollector
@@ -17,23 +18,42 @@ pytestmark = pytest.mark.tier(level=0)
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
 
-parameters = [
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing/*', 'EXCLUDE': '/tmp/testing/file.txt'},
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing/*', 'EXCLUDE': '/tmp/testing/f*'},
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing/*', 'EXCLUDE': '/tmp/testing/*g'},
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing/*', 'EXCLUDE': '/tmp/testing/file?.txt'},
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing/*', 'EXCLUDE': '/tmp/testing/file.log-%Y-%m-%d'},
-]
 
-metadata = [
-    {'log_format': 'syslog', 'location': '/tmp/testing/*', 'exclude': '/tmp/testing/file.txt', 'valid_value': True},
-    {'log_format': 'syslog', 'location': '/tmp/testing/*', 'exclude': '/tmp/testing/f*', 'valid_value': True},
-    {'log_format': 'syslog', 'location': '/tmp/testing/*', 'exclude': '/tmp/testing/*g', 'valid_value': True},
-    {'log_format': 'syslog', 'location': '/tmp/testing/*', 'exclude': '/tmp/testing/file?.txt', 'valid_value': True},
-    {'log_format': 'syslog', 'location': '/tmp/testing/*', 'exclude': '/tmp/testing/file.log-%Y-%m-%d',
-     'valid_value': True},
+if sys.platform == 'win32':
+    parameters = [
+        {'LOG_FORMAT': 'syslog', 'LOCATION': r'C:\tmp\*', 'EXCLUDE': r'C:\tmp\file.txt'},
+        {'LOG_FORMAT': 'syslog', 'LOCATION': r'C:\tmp\*', 'EXCLUDE': r'C:\tmp\*.txt'},
+        {'LOG_FORMAT': 'syslog', 'LOCATION': r'C:\tmp\*', 'EXCLUDE': r'C:\tmp\file.*'},
+        {'LOG_FORMAT': 'syslog', 'LOCATION': r'C:\tmp\*', 'EXCLUDE': r'C:\tmp\file.*'},
+        {'LOG_FORMAT': 'syslog', 'LOCATION': r'C:\tmp\*', 'EXCLUDE': r'C:\tmp\file.log-%Y-%m-%d'},
+    ]
 
-]
+    metadata = [
+        {'log_format': 'syslog', 'location': r'C:\tmp\*', 'exclude': r'C:\tmp\file.txt', 'valid_value': True},
+        {'log_format': 'syslog', 'location': r'C:\tmp\*', 'exclude': r'C:\tmp\*.txt', 'valid_value': True},
+        {'log_format': 'syslog', 'location': r'C:\tmp\*', 'exclude': r'C:\tmp\file.*', 'valid_value': True},
+        {'log_format': 'syslog', 'location': r'C:\tmp\*', 'exclude': r'C:\tmp\file.*', 'valid_value': True},
+        {'log_format': 'syslog', 'location': r'C:\tmp\*', 'exclude': r'C:\tmp\file.log-%Y-%m-%d', 'valid_value': True},
+    ]
+
+else:
+    parameters = [
+        {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing/*', 'EXCLUDE': '/tmp/testing/file.txt'},
+        {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing/*', 'EXCLUDE': '/tmp/testing/f*'},
+        {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing/*', 'EXCLUDE': '/tmp/testing/*g'},
+        {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing/*', 'EXCLUDE': '/tmp/testing/file?.txt'},
+        {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing/*', 'EXCLUDE': '/tmp/testing/file.log-%Y-%m-%d'},
+    ]
+
+    metadata = [
+        {'log_format': 'syslog', 'location': '/tmp/testing/*', 'exclude': '/tmp/testing/file.txt', 'valid_value': True},
+        {'log_format': 'syslog', 'location': '/tmp/testing/*', 'exclude': '/tmp/testing/f*', 'valid_value': True},
+        {'log_format': 'syslog', 'location': '/tmp/testing/*', 'exclude': '/tmp/testing/*g', 'valid_value': True},
+        {'log_format': 'syslog', 'location': '/tmp/testing/*', 'exclude': '/tmp/testing/file?.txt',
+         'valid_value': True},
+        {'log_format': 'syslog', 'location': '/tmp/testing/*', 'exclude': '/tmp/testing/file.log-%Y-%m-%d',
+         'valid_value': True},
+    ]
 
 configurations = load_wazuh_configurations(configurations_path, __name__,
                                            params=parameters,
@@ -48,7 +68,7 @@ def get_configuration(request):
     return request.param
 
 
-def test_configuration_frequency_valid(get_configuration, configure_environment, restart_logcollector):
+def test_configuration_exclude_valid(get_configuration, configure_environment, restart_logcollector):
     """
     """
     cfg = get_configuration['metadata']
@@ -61,7 +81,7 @@ def test_configuration_frequency_valid(get_configuration, configure_environment,
             assert str(cfg[field]) in str(api_answer[field]), "Wazuh API answer different from introduced configuration"
 
 
-def test_configuration_frequency_invalid(get_configuration, configure_environment, restart_logcollector):
+def test_configuration_exclude_invalid(get_configuration, configure_environment, restart_logcollector):
     """
     """
     cfg = get_configuration['metadata']

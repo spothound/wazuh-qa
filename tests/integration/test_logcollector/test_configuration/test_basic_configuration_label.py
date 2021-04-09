@@ -51,7 +51,7 @@ def get_configuration(request):
     return request.param
 
 
-def test_configuration_frequency_valid(get_configuration, configure_environment, restart_logcollector):
+def test_configuration_label_valid(get_configuration, configure_environment, restart_logcollector):
     """
     """
     cfg = get_configuration['metadata']

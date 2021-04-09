@@ -60,7 +60,7 @@ def get_configuration(request):
     return request.param
 
 
-def test_configuration_frequency_valid(get_configuration, configure_environment, restart_logcollector):
+def test_configuration_command_valid(get_configuration, configure_environment, restart_logcollector):
     """
     """
     cfg = get_configuration['metadata']
@@ -78,7 +78,7 @@ def test_configuration_frequency_valid(get_configuration, configure_environment,
             assert str(cfg[field]) in str(api_answer[field]), "Wazuh API answer different from introduced configuration"
 
 
-def test_configuration_frequency_invalid(get_configuration, configure_environment, restart_logcollector):
+def test_configuration_command_invalid(get_configuration, configure_environment, restart_logcollector):
     """
     """
     cfg = get_configuration['metadata']
