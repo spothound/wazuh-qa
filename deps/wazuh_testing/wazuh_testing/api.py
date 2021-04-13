@@ -110,7 +110,14 @@ def compare_config_api_response(configuration, section):
         section (str): Section to compare.
     """
     api_answer = get_manager_configuration(section=section)
-    assert configuration == api_answer
+    if isinstance(api_answer, list):
+        api_answer_lenght = len(api_answer)
+        for i in api_answer_lenght:
+            api_answer_subdict = dict((key, api_answer[i][key]) for key in configuration[i].keys())
+            assert api_answer_subdict == configuration[i]
+    else:
+        api_answer_subdict = dict((key, api_answer[key]) for key in configuration.keys())
+        assert api_answer_subdict == configuration
 
 
 def get_manager_configuration(section=None, field=None):
