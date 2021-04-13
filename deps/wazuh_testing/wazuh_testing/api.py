@@ -102,6 +102,17 @@ def get_security_resource_information(**kwargs):
         return {}
 
 
+def compare_config_api_response(configuration, section):
+    """Assert if configuration values provided are the same that configuration provided for API response.
+
+    Args:
+        configuration (dict): Dictionary with wazuh manager configuration.
+        section (str): Section to compare.
+    """
+    api_answer = get_manager_configuration(section=section)
+    assert configuration == api_answer
+
+
 def get_manager_configuration(section=None, field=None):
     """Get Wazuh manager configuration response from API using GET /manager/configuration
         
