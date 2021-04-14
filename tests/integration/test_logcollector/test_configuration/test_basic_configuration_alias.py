@@ -37,10 +37,6 @@ metadata = [
     {'log_format': 'full_command', 'command': f'{command}', 'alias': 'alias2'}
 ]
 
-for _ in len(parameters):
-    parameters['COMMAND'] = command
-    metadata['command'] = command
-
 configurations = load_wazuh_configurations(configurations_path, __name__,
                                            params=parameters,
                                            metadata=metadata)
