@@ -21,7 +21,7 @@ test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
 
 local_internal_options = {
-    'logcollector.remote_commands': 2
+    'logcollector.remote_commands': 1
 }
 
 if sys.platform == 'win32':
