@@ -21,11 +21,11 @@ test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
 
 if sys.platform == 'win32':
-    location = r'C:\testing.txt'
+    location = r'C:\testing\files*'
     wazuh_configuration = 'ossec.conf'
 
 else:
-    location = '/tmp/test.txt'
+    location = '/tmp/testing/files*'
     wazuh_configuration = 'etc/ossec.conf'
 
 parameters = [
