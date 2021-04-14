@@ -5,11 +5,13 @@
 import os
 import pytest
 import sys
+
 import wazuh_testing.api as api
-import wazuh_testing.logcollector as logcollector
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX
 import wazuh_testing.generic_callbacks as gc
+import wazuh_testing.logcollector as logcollector
+
 
 # Marks
 pytestmark = pytest.mark.tier(level=0)
@@ -56,7 +58,7 @@ metadata = [
 configurations = load_wazuh_configurations(configurations_path, __name__,
                                            params=parameters,
                                            metadata=metadata)
-configuration_ids = [f"{x['LOCATION'], x['AGE']}" for x in parameters]
+configuration_ids = [f"{x['LOCATION'], x['LOG_FORMAT'], x['AGE']}" for x in parameters]
 
 
 # fixtures
@@ -72,6 +74,10 @@ def test_configuration_age_valid(get_configuration, configure_environment, resta
     cfg = get_configuration['metadata']
     if not cfg['valid_value']:
         pytest.skip('Invalid values provided')
+
+    log_callback = logcollector.callback_analyzing_file(cfg['location'])
+    wazuh_log_monitor.start(timeout=5, callback=log_callback,
+                            error_message="The expected error output has not been produced")
 
     if sys.platform != 'win32':
         real_configuration = cfg.copy()
