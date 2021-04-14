@@ -34,7 +34,6 @@ metadata = [
     {'location': f'{location}', 'label': 'myapp', 'key': '@source'},
     {'location': f'{location}', 'label': 'myapp', 'key': 'agent.type'},
     {'location': f'{location}', 'label': 'myapp', 'key': 'agent.location'},
-    {'location': f'{location}', 'label': 'myapp', 'key': 'agent.location'},
     {'location': f'{location}', 'label': 'myapp', 'key': 'agent.idgroup'},
     {'location': f'{location}', 'label': 'myapp', 'key': 'group.groupnname'},
     {'location': f'{location}', 'label': 'myapp', 'key': '109304'},
@@ -59,13 +58,9 @@ def test_configuration_label_valid(get_configuration, configure_environment, res
     """
     """
     cfg = get_configuration['metadata']
-    api.compare_config_api_response([cfg], 'localfile')
+    real_configuration = dict((key, cfg[key]) for key in ['location'])
+    real_configuration['label'] = {'key': cfg['key'], 'item': cfg['label']}
 
-    """
-    api_answer = api.get_manager_configuration(section='localfile')[0]
-    api_label_key = str(api_answer['label']['key'])
-    api_label_item = str(api_answer['label']['item'])
-    assert cfg['label'] == api_label_item
-    assert cfg['key'] == api_label_key
-    """
+    api.compare_config_api_response([real_configuration], 'localfile')
+
 

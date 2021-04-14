@@ -8,6 +8,7 @@ import sys
 
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 import wazuh_testing.generic_callbacks as gc
+
 import wazuh_testing.api as api
 from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX
 
@@ -20,11 +21,11 @@ test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
 
 if sys.platform == 'win32':
-    location = '/tmp/test.txt'
+    location = r'C:\testing.txt'
     wazuh_configuration = 'ossec.conf'
 
 else:
-    location = r'C:\testing.txt'
+    location = '/tmp/test.txt'
     wazuh_configuration = 'etc/ossec.conf'
 
 parameters = [
@@ -80,8 +81,7 @@ def test_ignore_binaries_invalid(get_configuration, configure_environment, resta
     if cfg['valid_value']:
         pytest.skip('Invalid values provided')
 
-    log_callback = gc.callback_invalid_value('ignore_binaries', cfg['ignore_binaries'], LOG_COLLECTOR_DETECTOR_PREFIX,
-                                             conf_path=f'{wazuh_configuration}')
+    log_callback = gc.callback_invalid_value('ignore_binaries', cfg['ignore_binaries'], LOG_COLLECTOR_DETECTOR_PREFIX)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
