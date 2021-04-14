@@ -4,7 +4,6 @@
 
 import os
 import pytest
-import sys
 import wazuh_testing.api as api
 import wazuh_testing.logcollector as logcollector
 from wazuh_testing.tools.configuration import load_wazuh_configurations
