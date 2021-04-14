@@ -72,7 +72,7 @@ def test_configuration_reconnect_time_valid(get_configuration, configure_environ
 
     real_configuration = cfg.copy()
     real_configuration.pop('valid_value')
-    api.compare_config_api_response(real_configuration, 'localfile')
+    api.compare_config_api_response([real_configuration], 'localfile')
 
 
 def test_configuration_reconnect_time_invalid(get_configuration, configure_environment, restart_logcollector):

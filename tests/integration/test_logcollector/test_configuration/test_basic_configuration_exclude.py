@@ -69,5 +69,5 @@ def test_configuration_exclude_valid(get_configuration, configure_environment, r
     """
     cfg = get_configuration['metadata']
 
-    api.compare_config_api_response(cfg, 'localfile')
+    api.compare_config_api_response([cfg], 'localfile')
 

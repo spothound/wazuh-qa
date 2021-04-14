@@ -67,4 +67,4 @@ def test_configuration_alias(get_local_internal_options, configure_local_interna
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
-    api.compare_config_api_response(cfg, 'localfile')
+    api.compare_config_api_response([cfg], 'localfile')

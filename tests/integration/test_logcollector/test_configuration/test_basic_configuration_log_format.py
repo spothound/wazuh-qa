@@ -140,7 +140,7 @@ def test_log_format_valid(get_local_internal_options, configure_local_internal_o
 
     real_configuration = cfg.copy()
     real_configuration.pop('valid_value')
-    api.compare_config_api_response(real_configuration, 'localfile')
+    api.compare_config_api_response([real_configuration], 'localfile')
 
 
 def test_log_format_invalid(get_configuration, configure_environment, restart_logcollector):

@@ -64,7 +64,7 @@ def test_configuration_target_valid(get_configuration, configure_environment, re
 
     real_configuration = cfg.copy()
     real_configuration.pop('valid_value')
-    api.compare_config_api_response(real_configuration, 'localfile')
+    api.compare_config_api_response([real_configuration], 'localfile')
 
 
 def test_configuration_target_invalid(get_configuration, configure_environment, restart_logcollector):

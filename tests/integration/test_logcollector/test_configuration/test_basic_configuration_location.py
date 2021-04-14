@@ -94,4 +94,4 @@ def test_configuration_location(get_configuration, configure_environment, restar
     """
     """
     cfg = get_configuration['metadata']
-    api.compare_config_api_response(cfg, 'localfile')
+    api.compare_config_api_response([cfg], 'localfile')

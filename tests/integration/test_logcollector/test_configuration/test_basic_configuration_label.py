@@ -59,7 +59,7 @@ def test_configuration_label_valid(get_configuration, configure_environment, res
     """
     """
     cfg = get_configuration['metadata']
-    api.compare_config_api_response(cfg, 'localfile')
+    api.compare_config_api_response([cfg], 'localfile')
 
     """
     api_answer = api.get_manager_configuration(section='localfile')[0]

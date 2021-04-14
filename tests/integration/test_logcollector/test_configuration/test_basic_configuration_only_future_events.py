@@ -68,7 +68,7 @@ def test_only_future_events_valid(get_configuration, configure_environment, rest
 
     real_configuration = cfg.copy()
     real_configuration.pop('valid_value')
-    api.compare_config_api_response(real_configuration, 'localfile')
+    api.compare_config_api_response([real_configuration], 'localfile')
 
 
 def test_only_future_events_invalid(get_configuration, configure_environment, restart_logcollector):
