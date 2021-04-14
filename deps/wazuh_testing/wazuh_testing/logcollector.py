@@ -44,4 +44,4 @@ def callback_log_target_not_found(location, socket_name):
 
 def callback_invalid_reconnection_time(severity='WARNING', default_value='5'):
     msg = fr"{severity}: Invalid reconnection time value. Changed to {default_value} seconds."
-    return monitoring.make_callback(pattern=msg, prefix=wazuh_daemon)
+    return monitoring.make_callback(pattern=msg, prefix=monitoring.LOG_COLLECTOR_DETECTOR_PREFIX)

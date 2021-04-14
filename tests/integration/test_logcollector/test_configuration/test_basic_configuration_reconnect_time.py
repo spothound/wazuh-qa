@@ -7,8 +7,9 @@ import pytest
 import sys
 import wazuh_testing.api as api
 from wazuh_testing.tools.configuration import load_wazuh_configurations
-from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX
 import wazuh_testing.generic_callbacks as gc
+import wazuh_testing.logcollector as logcollector
+
 
 # Marks
 pytestmark = pytest.mark.tier(level=0)
@@ -78,6 +79,8 @@ def test_configuration_reconnect_time_valid(get_configuration, configure_environ
     api.compare_config_api_response([real_configuration], 'localfile')
 
 
+@pytest.mark.skipif(sys.platform == 'win32',
+                    reason="Windows system currently does not support this test required")
 def test_configuration_reconnect_time_invalid(get_configuration, configure_environment, restart_logcollector):
     """
     """
@@ -85,7 +88,7 @@ def test_configuration_reconnect_time_invalid(get_configuration, configure_envir
     if cfg['valid_value']:
         pytest.skip('Invalid values provided')
 
-    log_callback = gc.callback_invalid_reconnection_time()
+    log_callback = logcollector.callback_invalid_reconnection_time()
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 

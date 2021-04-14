@@ -146,6 +146,8 @@ def test_log_format_valid(get_local_internal_options, configure_local_internal_o
     api.compare_config_api_response([real_configuration], 'localfile')
 
 
+@pytest.mark.skipif(sys.platform == 'win32',
+                    reason="Windows system currently does not support this test required")
 def test_log_format_invalid(get_configuration, configure_environment, restart_logcollector):
     """
     """

@@ -62,11 +62,12 @@ def test_configuration_target_valid(get_configuration, configure_environment, re
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                 error_message="The expected error output has not been produced")
 
-    real_configuration = cfg.copy()
-    real_configuration.pop('valid_value')
+    real_configuration = dict((key, cfg[key]) for key in ('location', 'target', 'log_format'))
     api.compare_config_api_response([real_configuration], 'localfile')
 
 
+@pytest.mark.skipif(sys.platform == 'win32',
+                    reason="Windows system currently does not support this test required")
 def test_configuration_target_invalid(get_configuration, configure_environment, restart_logcollector):
     """
     """

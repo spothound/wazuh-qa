@@ -76,6 +76,8 @@ def test_only_future_events_valid(get_configuration, configure_environment, rest
     api.compare_config_api_response([real_configuration], 'localfile')
 
 
+@pytest.mark.skipif(sys.platform == 'win32',
+                    reason="Windows system currently does not support this test required")
 def test_only_future_events_invalid(get_configuration, configure_environment, restart_logcollector):
     """
     """
