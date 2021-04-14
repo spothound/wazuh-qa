@@ -40,3 +40,8 @@ def callback_socket_not_defined(location, socket_name):
 def callback_log_target_not_found(location, socket_name):
     msg = fr"WARNING: Log target '{socket_name}' not found for the output format of localfile '{location}'."
     return monitoring.make_callback(pattern=msg, prefix=monitoring.LOG_COLLECTOR_DETECTOR_PREFIX)
+
+
+def callback_invalid_reconnection_time(severity='WARNING', default_value='5'):
+    msg = fr"{severity}: Invalid reconnection time value. Changed to {default_value} seconds."
+    return monitoring.make_callback(pattern=msg, prefix=wazuh_daemon)

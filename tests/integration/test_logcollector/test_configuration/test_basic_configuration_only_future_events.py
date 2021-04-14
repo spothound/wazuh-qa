@@ -9,6 +9,7 @@ import sys
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 import wazuh_testing.generic_callbacks as gc
 import wazuh_testing.api as api
+import wazuh_testing.logcollector as logcollector
 from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX
 
 
@@ -65,6 +66,10 @@ def test_only_future_events_valid(get_configuration, configure_environment, rest
     cfg = get_configuration['metadata']
     if not cfg['valid_value']:
         pytest.skip('Invalid values provided')
+
+    log_callback = logcollector.callback_analyzing_file(cfg['location'])
+    wazuh_log_monitor.start(timeout=5, callback=log_callback,
+                            error_message="The expected error output has not been produced")
 
     real_configuration = cfg.copy()
     real_configuration.pop('valid_value')

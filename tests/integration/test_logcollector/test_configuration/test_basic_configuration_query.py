@@ -12,8 +12,7 @@ import sys
 # Marks
 pytestmark = pytest.mark.tier(level=0)
 
-if sys.platform != 'win32':
-    pytest.skip('Test only avaible for Windows system')
+
 
 # Configuration
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')

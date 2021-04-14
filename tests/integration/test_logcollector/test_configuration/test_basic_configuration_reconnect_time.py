@@ -19,8 +19,11 @@ configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.ya
 
 if sys.platform == 'win32':
     location = r'C:\testing.txt'
+    wazuh_configuration = 'ossec.conf'
+
 else:
     location = '/tmp/test.txt'
+    wazuh_configuration = 'etc/ossec.conf'
 
 parameters = [
     {'LOG_FORMAT': 'syslog', 'LOCATION': f'{location}', 'RECONNECT_TIME': '3s'},
@@ -37,17 +40,17 @@ parameters = [
 ]
 
 metadata = [
-    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '3s'},
-    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '4000s'},
-    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '5m'},
-    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '99h'},
-    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '94201d'},
-    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '44sTesting'},
-    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': 'Testing44s'},
-    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '9hTesting'},
-    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '400mTesting'},
-    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '3992'},
-    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': 'Testing'},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '3s', 'valid_value': True},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '4000s', 'valid_value': True},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '5m', 'valid_value': True},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '99h', 'valid_value': True},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '94201d', 'valid_value': True},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '44sTesting', 'valid_value': False},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': 'Testing44s', 'valid_value': False},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '9hTesting', 'valid_value': False},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '400mTesting', 'valid_value': False},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '3992', 'valid_value': False},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': 'Testing', 'valid_value': False},
 ]
 
 configurations = load_wazuh_configurations(configurations_path, __name__,
@@ -82,14 +85,7 @@ def test_configuration_reconnect_time_invalid(get_configuration, configure_envir
     if cfg['valid_value']:
         pytest.skip('Invalid values provided')
 
-    log_callback = gc.callback_invalid_value('reconnect_time', cfg['reconnect_time'], LOG_COLLECTOR_DETECTOR_PREFIX)
+    log_callback = gc.callback_invalid_reconnection_time()
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
-    log_callback = gc.callback_error_in_configuration('ERROR', LOG_COLLECTOR_DETECTOR_PREFIX)
-    wazuh_log_monitor.start(timeout=5, callback=log_callback,
-                            error_message="The expected error output has not been produced")
-
-    log_callback = gc.callback_error_in_configuration('CRITICAL', LOG_COLLECTOR_DETECTOR_PREFIX)
-    wazuh_log_monitor.start(timeout=5, callback=log_callback,
-                            error_message="The expected error output has not been produced")
