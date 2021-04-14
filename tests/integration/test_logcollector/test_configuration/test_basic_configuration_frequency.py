@@ -97,6 +97,10 @@ def test_configuration_frequency_valid(get_local_internal_options, configure_loc
     if not cfg['valid_value']:
         pytest.skip('Invalid values provided')
 
+   log_callback = logcollector.callback_monitoring_command(cfg['log_format'], cfg['command'])
+    wazuh_log_monitor.start(timeout=5, callback=log_callback,
+                            error_message="The expected error output has not been produced")
+
     real_configuration = cfg.copy()
     real_configuration.pop('valid_value')
     api.compare_config_api_response([real_configuration], 'localfile')
@@ -107,7 +111,7 @@ def test_configuration_frequency_invalid(get_configuration, configure_environmen
     """
     cfg = get_configuration['metadata']
     if cfg['valid_value']:
-        pytest.skip('Invalid values provided')
+        pytest.skip('Valid values provided')
 
     log_callback = gc.callback_invalid_value('frequency', cfg['frequency'], LOG_COLLECTOR_DETECTOR_PREFIX)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
