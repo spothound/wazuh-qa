@@ -156,7 +156,7 @@
   - section: localfile
     elements:
     - location:
-        value: "/tmp/file.log"
+        value: LOCATION
     - log_format:
          value: "json"
     - label:

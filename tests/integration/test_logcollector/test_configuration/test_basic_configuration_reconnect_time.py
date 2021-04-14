@@ -4,8 +4,8 @@
 
 import os
 import pytest
+import sys
 import wazuh_testing.api as api
-import wazuh_testing.logcollector as logcollector
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX
 import wazuh_testing.generic_callbacks as gc
@@ -17,32 +17,37 @@ pytestmark = pytest.mark.tier(level=0)
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
 
+if sys.platform == 'win32':
+    location = r'C:\testing.txt'
+else:
+    location = '/tmp/test.txt'
+
 parameters = [
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing.txt', 'RECONNECT_TIME': '3s'},
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing.txt', 'RECONNECT_TIME': '4000s'},
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing.txt', 'RECONNECT_TIME': '5m'},
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing.txt', 'RECONNECT_TIME': '99h'},
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing.txt', 'RECONNECT_TIME': '94201d'},
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing.txt', 'RECONNECT_TIME': '44sTesting'},
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing.txt', 'RECONNECT_TIME': 'Testing44s'},
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing.txt', 'RECONNECT_TIME': '9hTesting'},
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing.txt', 'RECONNECT_TIME': '400mTesting'},
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing.txt', 'RECONNECT_TIME': '3992'},
-    {'LOG_FORMAT': 'syslog', 'LOCATION': '/tmp/testing.txt', 'RECONNECT_TIME': 'Testing'},
+    {'LOG_FORMAT': 'syslog', 'LOCATION': f'{location}', 'RECONNECT_TIME': '3s'},
+    {'LOG_FORMAT': 'syslog', 'LOCATION': f'{location}', 'RECONNECT_TIME': '4000s'},
+    {'LOG_FORMAT': 'syslog', 'LOCATION': f'{location}', 'RECONNECT_TIME': '5m'},
+    {'LOG_FORMAT': 'syslog', 'LOCATION': f'{location}', 'RECONNECT_TIME': '99h'},
+    {'LOG_FORMAT': 'syslog', 'LOCATION': f'{location}', 'RECONNECT_TIME': '94201d'},
+    {'LOG_FORMAT': 'syslog', 'LOCATION': f'{location}', 'RECONNECT_TIME': '44sTesting'},
+    {'LOG_FORMAT': 'syslog', 'LOCATION': f'{location}', 'RECONNECT_TIME': 'Testing44s'},
+    {'LOG_FORMAT': 'syslog', 'LOCATION': f'{location}', 'RECONNECT_TIME': '9hTesting'},
+    {'LOG_FORMAT': 'syslog', 'LOCATION': f'{location}', 'RECONNECT_TIME': '400mTesting'},
+    {'LOG_FORMAT': 'syslog', 'LOCATION': f'{location}', 'RECONNECT_TIME': '3992'},
+    {'LOG_FORMAT': 'syslog', 'LOCATION': f'{location}', 'RECONNECT_TIME': 'Testing'},
 ]
 
 metadata = [
-    {'log_format': 'syslog', 'location': '/tmp/testing.txt', 'reconnect_time': '3s'},
-    {'log_format': 'syslog', 'location': '/tmp/testing.txt', 'reconnect_time': '4000s'},
-    {'log_format': 'syslog', 'location': '/tmp/testing.txt', 'reconnect_time': '5m'},
-    {'log_format': 'syslog', 'location': '/tmp/testing.txt', 'reconnect_time': '99h'},
-    {'log_format': 'syslog', 'location': '/tmp/testing.txt', 'reconnect_time': '94201d'},
-    {'log_format': 'syslog', 'location': '/tmp/testing.txt', 'reconnect_time': '44sTesting'},
-    {'log_format': 'syslog', 'location': '/tmp/testing.txt', 'reconnect_time': 'Testing44s'},
-    {'log_format': 'syslog', 'location': '/tmp/testing.txt', 'reconnect_time': '9hTesting'},
-    {'log_format': 'syslog', 'location': '/tmp/testing.txt', 'reconnect_time': '400mTesting'},
-    {'log_format': 'syslog', 'location': '/tmp/testing.txt', 'reconnect_time': '3992'},
-    {'log_format': 'syslog', 'location': '/tmp/testing.txt', 'reconnect_time': 'Testing'},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '3s'},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '4000s'},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '5m'},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '99h'},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '94201d'},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '44sTesting'},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': 'Testing44s'},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '9hTesting'},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '400mTesting'},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': '3992'},
+    {'log_format': 'syslog', 'location': f'{location}', 'reconnect_time': 'Testing'},
 ]
 
 configurations = load_wazuh_configurations(configurations_path, __name__,
@@ -65,10 +70,9 @@ def test_configuration_reconnect_time_valid(get_configuration, configure_environ
     if not cfg['valid_value']:
         pytest.skip('Invalid values provided')
 
-    api_answer = api.get_manager_configuration(section='localfile')[0]
-    for field in cfg.keys():
-        if field != 'valid_value':
-            assert str(cfg[field]) in str(api_answer[field]), "Wazuh API answer different from introduced configuration"
+    real_configuration = cfg.copy()
+    real_configuration.pop('valid_value')
+    api.compare_config_api_response(real_configuration, 'localfile')
 
 
 def test_configuration_reconnect_time_invalid(get_configuration, configure_environment, restart_logcollector):

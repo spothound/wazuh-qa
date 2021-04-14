@@ -9,7 +9,6 @@ import wazuh_testing.logcollector as logcollector
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 import sys
 
-
 # Marks
 pytestmark = pytest.mark.tier(level=0)
 
@@ -24,20 +23,20 @@ parameters = [
     {'LOG_FORMAT': 'eventchannel', 'QUERY': 'Event[System/EventID = 4624]'},
     {'LOG_FORMAT': 'eventchannel', 'QUERY': 'Event[System/EventID = 1343 and '
                                             '(EventData/Data[@Name=\'LogonType\'] = 2',
-    },
+     },
     {'LOG_FORMAT': 'eventchannel', 'QUERY': 'Event[System/EventID = 6632 and '
                                             '(EventData/Data[@Name=\'LogonType\'] = 93 or '
                                             'EventData/Data[@Name=\'LogonType\'] = 111)]',
-    },
+     },
     {'LOG_FORMAT': 'eventchannel', 'QUERY': 'Testing',
-    },
+     },
     {'LOG_FORMAT': 'eventchannel', 'QUERY': 'Event[System/TESTINGID = 344]',
-    },
+     },
 ]
 metadata = [
     {'log_format': 'eventchannel', 'query': 'Event[System/EventID = 4624]',
      'valid_value': True
-    },
+     },
     {'log_format': 'eventchannel', 'query': 'Event[System/EventID = 1343 and '
                                             '(EventData/Data[@Name=\'LogonType\'] = 2',
      'valid_value': True
@@ -65,6 +64,7 @@ def get_configuration(request):
     """Get configurations from the module."""
     return request.param
 
+
 @pytest.mark.skipif(sys.platform != 'win32',
                     reason="Windows is required for this test")
 def test_configuration_query_valid(get_configuration, configure_environment, restart_logcollector):
@@ -74,10 +74,9 @@ def test_configuration_query_valid(get_configuration, configure_environment, res
     if not cfg['valid_value']:
         pytest.skip('Invalid values provided')
 
-    api_answer = api.get_manager_configuration(section='localfile')[0]
-    for field in cfg.keys():
-        if field != 'valid_value':
-            assert str(cfg[field]) in str(api_answer[field]), "Wazuh API answer different from introduced configuration"
+    real_configuration = cfg.copy()
+    real_configuration.pop('valid_value')
+    api.compare_config_api_response(real_configuration, 'localfile')
 
 
 @pytest.mark.skipif(sys.platform != 'win32',

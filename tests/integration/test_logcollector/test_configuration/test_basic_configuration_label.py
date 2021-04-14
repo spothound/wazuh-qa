@@ -3,12 +3,10 @@
 # This program is free software; you can redistribute it and/or modify it under the terms of GPLv2
 
 import os
+import sys
 import pytest
 import wazuh_testing.api as api
-import wazuh_testing.logcollector as logcollector
 from wazuh_testing.tools.configuration import load_wazuh_configurations
-from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX
-import wazuh_testing.generic_callbacks as gc
 
 # Marks
 pytestmark = pytest.mark.tier(level=0)
@@ -17,31 +15,37 @@ pytestmark = pytest.mark.tier(level=0)
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
 
+if sys.platform == 'win32':
+    location = r'C:\TESTING\testfile.txt'
+else:
+    location = '/tmp/testing.txt'
+
 parameters = [
-    {'LABEL': 'myapp', 'KEY': '@source'},
-    {'LABEL': 'myapp', 'KEY': 'agent.type'},
-    {'LABEL': 'myapp', 'KEY': 'agent.location'},
-    {'LABEL': 'myapp', 'KEY': 'agent.idgroup'},
-    {'LABEL': 'myapp', 'KEY': 'group.groupnname'},
-    {'LABEL': 'myapp', 'KEY': '109304'},
-    {'LABEL': 'myapp', 'KEY': 'TestingTagNames'},
-    {'LABEL': 'myapp', 'KEY': '?¿atag_tname'},
+    {'LOCATION': f'{location}', 'LABEL': 'myapp', 'KEY': '@source'},
+    {'LOCATION': f'{location}', 'LABEL': 'myapp', 'KEY': 'agent.type'},
+    {'LOCATION': f'{location}', 'LABEL': 'myapp', 'KEY': 'agent.location'},
+    {'LOCATION': f'{location}', 'LABEL': 'myapp', 'KEY': 'agent.idgroup'},
+    {'LOCATION': f'{location}', 'LABEL': 'myapp', 'KEY': 'group.groupnname'},
+    {'LOCATION': f'{location}', 'LABEL': 'myapp', 'KEY': '109304'},
+    {'LOCATION': f'{location}', 'LABEL': 'myapp', 'KEY': 'TestingTagNames'},
+    {'LOCATION': f'{location}', 'LABEL': 'myapp', 'KEY': '?¿atag_tname'},
 ]
 metadata = [
-    {'label': 'myapp', 'key': '@source'},
-    {'label': 'myapp', 'key': 'agent.type'},
-    {'label': 'myapp', 'key': 'agent.location'},
-    {'label': 'myapp', 'key': 'agent.idgroup'},
-    {'label': 'myapp', 'key': 'group.groupnname'},
-    {'label': 'myapp', 'key': '109304'},
-    {'label': 'myapp', 'key': 'TestingTagNames'},
-    {'label': 'myapp', 'key': '?¿atag_tname'}
+    {'location': f'{location}', 'label': 'myapp', 'key': '@source'},
+    {'location': f'{location}', 'label': 'myapp', 'key': 'agent.type'},
+    {'location': f'{location}', 'label': 'myapp', 'key': 'agent.location'},
+    {'location': f'{location}', 'label': 'myapp', 'key': 'agent.location'},
+    {'location': f'{location}', 'label': 'myapp', 'key': 'agent.idgroup'},
+    {'location': f'{location}', 'label': 'myapp', 'key': 'group.groupnname'},
+    {'location': f'{location}', 'label': 'myapp', 'key': '109304'},
+    {'location': f'{location}', 'label': 'myapp', 'key': 'TestingTagNames'},
+    {'location': f'{location}', 'label': 'myapp', 'key': '?¿atag_tname'}
 ]
 
 configurations = load_wazuh_configurations(configurations_path, __name__,
                                            params=parameters,
                                            metadata=metadata)
-configuration_ids = [f"{x['LABEL'], x['KEY']}" for x in parameters]
+configuration_ids = [f"{x['LOCATION'], x['LABEL'], x['KEY']}" for x in parameters]
 
 
 # fixtures
@@ -55,10 +59,13 @@ def test_configuration_label_valid(get_configuration, configure_environment, res
     """
     """
     cfg = get_configuration['metadata']
+    api.compare_config_api_response(cfg, 'localfile')
 
+    """
     api_answer = api.get_manager_configuration(section='localfile')[0]
     api_label_key = str(api_answer['label']['key'])
     api_label_item = str(api_answer['label']['item'])
     assert cfg['label'] == api_label_item
     assert cfg['key'] == api_label_key
+    """
 

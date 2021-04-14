@@ -94,7 +94,4 @@ def test_configuration_location(get_configuration, configure_environment, restar
     """
     """
     cfg = get_configuration['metadata']
-
-    api_answer = api.get_manager_configuration(section='localfile')[0]
-    for field in cfg.keys():
-            assert str(cfg[field]) in str(api_answer[field]), "Wazuh API answer different from introduced configuration"
+    api.compare_config_api_response(cfg, 'localfile')

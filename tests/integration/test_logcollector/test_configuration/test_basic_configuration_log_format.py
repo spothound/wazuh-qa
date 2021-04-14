@@ -4,6 +4,7 @@
 
 import os
 import pytest
+import sys
 
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 import wazuh_testing.logcollector as logcollector
@@ -18,67 +19,77 @@ pytestmark = pytest.mark.tier(level=0)
 # Configuration
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
+
 local_internal_options = {
-    'logcollector.debug': 2
+    'logcollector.remote_commands': 2
 }
+
+if sys.platform == 'win32':
+    location = r'C:\testing.txt'
+else:
+    location = '/tmp/test.txt'
+
 parameters = [
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'syslog', 'COMMAND': 'example-command'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'json', 'COMMAND': 'example-command'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'snort-full', 'COMMAND': 'example-command'},
-    {'LOCATION': 'Security', 'LOG_FORMAT': 'eventlog', 'COMMAND': 'example-command'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'eventchannel', 'COMMAND': 'example-command'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'mysql_log', 'COMMAND': 'example-command'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'postgresql_log', 'COMMAND': 'example-command'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'nmapg', 'COMMAND': 'example-command'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'iis', 'COMMAND': 'example-command'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'command', 'COMMAND': 'example-command'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'full_command', 'COMMAND': 'example-command'},
-    {'LOCATION': '/var/log/testing/current', 'LOG_FORMAT': 'djb-multilog', 'COMMAND': 'example-command'},
-    {'LOCATION': '/var/log/program_name_testing/current', 'LOG_FORMAT': 'djb-multilog', 'COMMAND': 'example-command'},
-    {'LOCATION': '/var/log/testing/current', 'LOG_FORMAT': 'djb-multilog', 'COMMAND': 'example-command'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'multi-line:3', 'COMMAND': 'example-command'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'squid', 'COMMAND': 'example-command'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'audit', 'COMMAND': 'example-command'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'invalid', 'COMMAND': 'example-command'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'squiddasfsafas', 'COMMAND': 'example-command'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'iisTesting', 'COMMAND': 'example-command'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'nmapgFSKF', 'COMMAND': 'example-command'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'jsonLGK', 'COMMAND': 'example-command'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'commandFLKD', 'COMMAND': 'example-command'}
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'json', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'snort-full', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'mysql_log', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'postgresql_log', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'nmapg', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'iis', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'command', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'full_command', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'djb-multilog', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'djb-multilog', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'djb-multilog', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'multi-line:3', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'squid', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'audit', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'invalid', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'squiddasfsafas', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'iisTesting', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'nmapgFSKF', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'jsonLGK', 'COMMAND': 'example-command'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'commandFLKD', 'COMMAND': 'example-command'}
 ]
 
 metadata = [
-    {'location': '/tmp/test.txt', 'log_format': 'syslog', 'command': 'example-command', 'valid_value': True},
-    {'location': '/tmp/test.txt', 'log_format': 'json', 'command': 'example-command', 'valid_value': True},
-    {'location': '/tmp/test.txt', 'log_format': 'snort-full', 'command': 'example-command', 'valid_value': True},
-    {'location': 'Security', 'log_format': 'eventlog', 'command': 'example-command', 'valid_value': True},
-    {'location': '/tmp/test.txt', 'log_format': 'eventchannel', 'command': 'example-command', 'valid_value': True},
-    {'location': '/tmp/test.txt', 'log_format': 'mysql_log', 'command': 'example-command', 'valid_value': True},
-    {'location': '/tmp/test.txt', 'log_format': 'postgresql_log', 'command': 'example-command', 'valid_value': True},
-    {'location': '/tmp/test.txt', 'log_format': 'nmapg', 'command': 'example-command', 'valid_value': True},
-    {'location': '/tmp/test.txt', 'log_format': 'iis', 'command': 'example-command', 'valid_value': True},
-    {'location': '/tmp/test.txt', 'log_format': 'command', 'command': 'example-command', 'valid_value': True},
-    {'location': '/tmp/test.txt', 'log_format': 'full_command', 'command': 'example-command', 'valid_value': True},
-    {'location': '/var/log/testing/current', 'log_format': 'djb-multilog',
+    {'location': f'{location}', 'log_format': 'syslog', 'command': 'example-command', 'valid_value': True},
+    {'location': f'{location}', 'log_format': 'json', 'command': 'example-command', 'valid_value': True},
+    {'location': f'{location}', 'log_format': 'snort-full', 'command': 'example-command', 'valid_value': True},
+
+    {'location': f'{location}', 'log_format': 'mysql_log', 'command': 'example-command', 'valid_value': True},
+    {'location': f'{location}', 'log_format': 'postgresql_log', 'command': 'example-command', 'valid_value': True},
+    {'location': f'{location}', 'log_format': 'nmapg', 'command': 'example-command', 'valid_value': True},
+    {'location': f'{location}', 'log_format': 'iis', 'command': 'example-command', 'valid_value': True},
+    {'location': f'{location}', 'log_format': 'command', 'command': 'example-command', 'valid_value': True},
+    {'location': f'{location}', 'log_format': 'full_command', 'command': 'example-command', 'valid_value': True},
+    {'location': f'{location}', 'log_format': 'djb-multilog',
      'command': 'example-command', 'valid_value': True},
-    {'location': '/var/log/program_name_testing/current', 'log_format': 'djb-multilog',
+    {'location': f'{location}', 'log_format': 'djb-multilog',
      'command': 'example-command', 'valid_value': True},
-    {'location': '/var/log/testing/current', 'log_format': 'djb-multilog',
-     'command': 'example-command','valid_value': True},
-    {'location': '/tmp/test.txt', 'log_format': 'multi-line:3',
+    {'location': f'{location}', 'log_format': 'djb-multilog',
      'command': 'example-command', 'valid_value': True},
-    {'location': '/tmp/test.txt', 'log_format': 'squid',
+    {'location': f'{location}', 'log_format': 'multi-line:3',
      'command': 'example-command', 'valid_value': True},
-    {'location': '/tmp/test.txt', 'log_format': 'audit',
+    {'location': f'{location}', 'log_format': 'squid',
      'command': 'example-command', 'valid_value': True},
-    {'location': '/tmp/test.txt', 'log_format': 'invalid',
+    {'location': f'{location}', 'log_format': 'audit',
+     'command': 'example-command', 'valid_value': True},
+    {'location': f'{location}', 'log_format': 'invalid',
      'command': 'example-command', 'valid_value': False},
-    {'location': '/tmp/test.txt', 'log_format': 'squiddasfsafas', 'command': 'example-command', 'valid_value': False},
-    {'location': '/tmp/test.txt', 'log_format': 'iisTesting', 'command': 'example-command', 'valid_value': False},
-    {'location': '/tmp/test.txt', 'log_format': 'nmapgFSKF', 'command': 'example-command', 'valid_value': False},
-    {'location': '/tmp/test.txt', 'log_format': 'jsonLGK', 'command': 'example-command', 'valid_value': False},
-    {'location': '/tmp/test.txt', 'log_format': 'commandFLKD', 'command': 'example-command', 'valid_value': False}
+    {'location': f'{location}', 'log_format': 'squiddasfsafas', 'command': 'example-command', 'valid_value': False},
+    {'location': f'{location}', 'log_format': 'iisTesting', 'command': 'example-command', 'valid_value': False},
+    {'location': f'{location}', 'log_format': 'nmapgFSKF', 'command': 'example-command', 'valid_value': False},
+    {'location': f'{location}', 'log_format': 'jsonLGK', 'command': 'example-command', 'valid_value': False},
+    {'location': f'{location}', 'log_format': 'commandFLKD', 'command': 'example-command', 'valid_value': False}
 ]
+
+if sys.platform == 'win32':
+    parameters.append({'LOCATION': 'Security', 'LOG_FORMAT': 'eventlog', 'COMMAND': 'example-command'})
+    parameters.append({'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'eventchannel', 'COMMAND': 'example-command'})
+    metadata.append({'location': 'Security', 'log_format': 'eventlog', 'command': 'example-command', 'valid_value': True})
+    metadata.append({'location': '/tmp/test.txt', 'log_format': 'eventchannel', 'command': 'example-command', 'valid_value': True})
 
 
 configurations = load_wazuh_configurations(configurations_path, __name__,
@@ -127,10 +138,9 @@ def test_log_format_valid(get_local_internal_options, configure_local_internal_o
                                 error_message="The expected error output has not been produced")
 
 
-    api_answer = api.get_manager_configuration(section='localfile')[0]
-    for field in cfg.keys():
-        if field != 'valid_value':
-            assert str(cfg[field]) in str(api_answer[field]), "Wazuh API answer different from introduced configuration"
+    real_configuration = cfg.copy()
+    real_configuration.pop('valid_value')
+    api.compare_config_api_response(real_configuration, 'localfile')
 
 
 def test_log_format_invalid(get_configuration, configure_environment, restart_logcollector):

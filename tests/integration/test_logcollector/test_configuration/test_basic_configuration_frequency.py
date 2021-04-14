@@ -4,6 +4,7 @@
 
 import os
 import pytest
+import sys
 import wazuh_testing.api as api
 import wazuh_testing.logcollector as logcollector
 from wazuh_testing.tools.configuration import load_wazuh_configurations
@@ -17,43 +18,52 @@ pytestmark = pytest.mark.tier(level=0)
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
 
+local_internal_options = {
+    'logcollector.remote_commands': 2
+}
+
+if sys.platform == 'win32':
+    command = 'tasklist'
+else:
+    command = 'ps -aux'
+
 parameters = [
-    {'LOG_FORMAT': 'command', 'COMMAND': 'echo Testing', 'FREQUENCY': '3'},
-    {'LOG_FORMAT': 'command', 'COMMAND': 'echo Testing', 'FREQUENCY': '10'},
-    {'LOG_FORMAT': 'command', 'COMMAND': 'echo Testing', 'FREQUENCY': '100000'},
-    {'LOG_FORMAT': 'command', 'COMMAND': 'echo Testing', 'FREQUENCY': '3s'},
-    {'LOG_FORMAT': 'command', 'COMMAND': 'echo Testing', 'FREQUENCY': 'Testing'},
-    {'LOG_FORMAT': 'command', 'COMMAND': 'echo Testing', 'FREQUENCY': '3Testing'},
-    {'LOG_FORMAT': 'command', 'COMMAND': 'echo Testing', 'FREQUENCY': '3s5m'},
-    {'LOG_FORMAT': 'command', 'COMMAND': 'echo Testing', 'FREQUENCY': 'Testing3'},
-    {'LOG_FORMAT': 'full_command', 'COMMAND': 'echo Testing', 'FREQUENCY': '3'},
-    {'LOG_FORMAT': 'full_command', 'COMMAND': 'echo Testing', 'FREQUENCY': '10'},
-    {'LOG_FORMAT': 'full_command', 'COMMAND': 'echo Testing', 'FREQUENCY': '100000'},
-    {'LOG_FORMAT': 'full_command', 'COMMAND': 'echo Testing', 'FREQUENCY': '3s'},
-    {'LOG_FORMAT': 'full_command', 'COMMAND': 'echo Testing', 'FREQUENCY': 'Testing'},
-    {'LOG_FORMAT': 'full_command', 'COMMAND': 'echo Testing', 'FREQUENCY': '3Testing'},
-    {'LOG_FORMAT': 'full_command', 'COMMAND': 'echo Testing', 'FREQUENCY': '3s5m'},
-    {'LOG_FORMAT': 'full_command', 'COMMAND': 'echo Testing', 'FREQUENCY': 'Testing3'},
+    {'LOG_FORMAT': 'command', 'COMMAND': f'{command}', 'FREQUENCY': '3'},
+    {'LOG_FORMAT': 'command', 'COMMAND': f'{command}', 'FREQUENCY': '10'},
+    {'LOG_FORMAT': 'command', 'COMMAND': f'{command}', 'FREQUENCY': '100000'},
+    {'LOG_FORMAT': 'command', 'COMMAND': f'{command}', 'FREQUENCY': '3s'},
+    {'LOG_FORMAT': 'command', 'COMMAND': f'{command}', 'FREQUENCY': 'Testing'},
+    {'LOG_FORMAT': 'command', 'COMMAND': f'{command}', 'FREQUENCY': '3Testing'},
+    {'LOG_FORMAT': 'command', 'COMMAND': f'{command}', 'FREQUENCY': '3s5m'},
+    {'LOG_FORMAT': 'command', 'COMMAND': f'{command}', 'FREQUENCY': 'Testing3'},
+    {'LOG_FORMAT': 'full_command', 'COMMAND': f'{command}', 'FREQUENCY': '3'},
+    {'LOG_FORMAT': 'full_command', 'COMMAND': f'{command}', 'FREQUENCY': '10'},
+    {'LOG_FORMAT': 'full_command', 'COMMAND': f'{command}', 'FREQUENCY': '100000'},
+    {'LOG_FORMAT': 'full_command', 'COMMAND': f'{command}', 'FREQUENCY': '3s'},
+    {'LOG_FORMAT': 'full_command', 'COMMAND': f'{command}', 'FREQUENCY': 'Testing'},
+    {'LOG_FORMAT': 'full_command', 'COMMAND': f'{command}', 'FREQUENCY': '3Testing'},
+    {'LOG_FORMAT': 'full_command', 'COMMAND': f'{command}', 'FREQUENCY': '3s5m'},
+    {'LOG_FORMAT': 'full_command', 'COMMAND': f'{command}', 'FREQUENCY': 'Testing3'},
 
 ]
 
 metadata = [
-    {'log_format': 'command', 'command': 'echo Testing', 'frequency': '3', 'valid_value': True},
-    {'log_format': 'command', 'command': 'echo Testing', 'frequency': '10', 'valid_value': True},
-    {'log_format': 'command', 'command': 'echo Testing', 'frequency': '100000', 'valid_value': True},
-    {'log_format': 'command', 'command': 'echo Testing', 'frequency': '3s', 'valid_value': False},
-    {'log_format': 'command', 'command': 'echo Testing', 'frequency': 'Testing', 'valid_value': False},
-    {'log_format': 'command', 'command': 'echo Testing', 'frequency': '3Testing', 'valid_value': False},
-    {'log_format': 'command', 'command': 'echo Testing', 'frequency': '3s5m', 'valid_value': False},
-    {'log_format': 'command', 'command': 'echo Testing', 'frequency': 'Testing3', 'valid_value': False},
-    {'log_format': 'full_command', 'command': 'echo Testing', 'frequency': '3', 'valid_value': True},
-    {'log_format': 'full_command', 'command': 'echo Testing', 'frequency': '10', 'valid_value': True},
-    {'log_format': 'full_command', 'command': 'echo Testing', 'frequency': '100000', 'valid_value': True},
-    {'log_format': 'full_command', 'command': 'echo Testing', 'frequency': '3s', 'valid_value': False},
-    {'log_format': 'full_command', 'command': 'echo Testing', 'frequency': 'Testing', 'valid_value': False},
-    {'log_format': 'full_command', 'command': 'echo Testing', 'frequency': '3Testing', 'valid_value': False},
-    {'log_format': 'full_command', 'command': 'echo Testing', 'frequency': '3s5m', 'valid_value': False},
-    {'log_format': 'full_command', 'command': 'echo Testing', 'frequency': 'Testing3', 'valid_value': False},
+    {'log_format': 'command', 'command': f'{command}', 'frequency': '3', 'valid_value': True},
+    {'log_format': 'command', 'command': f'{command}', 'frequency': '10', 'valid_value': True},
+    {'log_format': 'command', 'command': f'{command}', 'frequency': '100000', 'valid_value': True},
+    {'log_format': 'command', 'command': f'{command}', 'frequency': '3s', 'valid_value': False},
+    {'log_format': 'command', 'command': f'{command}', 'frequency': 'Testing', 'valid_value': False},
+    {'log_format': 'command', 'command': f'{command}', 'frequency': '3Testing', 'valid_value': False},
+    {'log_format': 'command', 'command': f'{command}', 'frequency': '3s5m', 'valid_value': False},
+    {'log_format': 'command', 'command': f'{command}', 'frequency': 'Testing3', 'valid_value': False},
+    {'log_format': 'full_command', 'command': f'{command}', 'frequency': '3', 'valid_value': True},
+    {'log_format': 'full_command', 'command': f'{command}', 'frequency': '10', 'valid_value': True},
+    {'log_format': 'full_command', 'command': f'{command}', 'frequency': '100000', 'valid_value': True},
+    {'log_format': 'full_command', 'command': f'{command}', 'frequency': '3s', 'valid_value': False},
+    {'log_format': 'full_command', 'command': f'{command}', 'frequency': 'Testing', 'valid_value': False},
+    {'log_format': 'full_command', 'command': f'{command}', 'frequency': '3Testing', 'valid_value': False},
+    {'log_format': 'full_command', 'command': f'{command}', 'frequency': '3s5m', 'valid_value': False},
+    {'log_format': 'full_command', 'command': f'{command}', 'frequency': 'Testing3', 'valid_value': False},
 ]
 
 configurations = load_wazuh_configurations(configurations_path, __name__,
@@ -69,17 +79,23 @@ def get_configuration(request):
     return request.param
 
 
-def test_configuration_frequency_valid(get_configuration, configure_environment, restart_logcollector):
+@pytest.fixture(scope="module")
+def get_local_internal_options():
+    """Get configurations from the module."""
+    return local_internal_options
+
+
+def test_configuration_frequency_valid(get_local_internal_options, configure_local_internal_options,
+                                       get_configuration, configure_environment, restart_logcollector):
     """
     """
     cfg = get_configuration['metadata']
     if not cfg['valid_value']:
         pytest.skip('Invalid values provided')
 
-    api_answer = api.get_manager_configuration(section='localfile')[0]
-    for field in cfg.keys():
-        if field != 'valid_value':
-            assert str(cfg[field]) in str(api_answer[field]), "Wazuh API answer different from introduced configuration"
+    real_configuration = cfg.copy()
+    real_configuration.pop('valid_value')
+    api.compare_config_api_response(real_configuration, 'localfile')
 
 
 def test_configuration_frequency_invalid(get_configuration, configure_environment, restart_logcollector):

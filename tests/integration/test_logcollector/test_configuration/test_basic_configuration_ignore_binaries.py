@@ -4,6 +4,7 @@
 
 import os
 import pytest
+import sys
 
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 import wazuh_testing.generic_callbacks as gc
@@ -17,26 +18,29 @@ pytestmark = pytest.mark.tier(level=0)
 # Configuration
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
-local_internal_options = {
-    'logcollector.debug': 2
-}
+
+if sys.platform == 'win32':
+    location = '/tmp/test.txt'
+else:
+    location = r'C:\testing.txt'
+
 parameters = [
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'syslog', 'IGNORE_BINARIES': 'yes'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'syslog', 'IGNORE_BINARIES': 'no'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'syslog', 'IGNORE_BINARIES': 'yesTesting'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'syslog', 'IGNORE_BINARIES': 'noTesting'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'syslog', 'IGNORE_BINARIES': 'testingvalue'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'syslog', 'IGNORE_BINARIES': '1234'}
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'IGNORE_BINARIES': 'yes'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'IGNORE_BINARIES': 'no'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'IGNORE_BINARIES': 'yesTesting'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'IGNORE_BINARIES': 'noTesting'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'IGNORE_BINARIES': 'testingvalue'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'IGNORE_BINARIES': '1234'}
 
 ]
 
 metadata = [
-    {'location': '/tmp/test.txt', 'log_format': 'syslog', 'ignore_binaries': 'yes', 'valid_value': True},
-    {'location': '/tmp/test.txt', 'log_format': 'syslog', 'ignore_binaries': 'no', 'valid_value': True},
-    {'location': '/tmp/test.txt', 'log_format': 'syslog', 'ignore_binaries': 'yesTesting', 'valid_value': False},
-    {'location': '/tmp/test.txt', 'log_format': 'syslog', 'ignore_binaries': 'noTesting', 'valid_value': False},
-    {'location': '/tmp/test.txt', 'log_format': 'syslog', 'ignore_binaries': 'testingvalue', 'valid_value': False},
-    {'location': '/tmp/test.txt', 'log_format': 'syslog', 'ignore_binaries': '1234', 'valid_value': False}
+    {'location': f'{location}', 'log_format': 'syslog', 'ignore_binaries': 'yes', 'valid_value': True},
+    {'location': f'{location}', 'log_format': 'syslog', 'ignore_binaries': 'no', 'valid_value': True},
+    {'location': f'{location}', 'log_format': 'syslog', 'ignore_binaries': 'yesTesting', 'valid_value': False},
+    {'location': f'{location}', 'log_format': 'syslog', 'ignore_binaries': 'noTesting', 'valid_value': False},
+    {'location': f'{location}', 'log_format': 'syslog', 'ignore_binaries': 'testingvalue', 'valid_value': False},
+    {'location': f'{location}', 'log_format': 'syslog', 'ignore_binaries': '1234', 'valid_value': False}
 
 ]
 
@@ -61,10 +65,9 @@ def test_ignore_binaries_valid(get_configuration, configure_environment, restart
     if not cfg['valid_value']:
         pytest.skip('Invalid values provided')
 
-    api_answer = api.get_manager_configuration(section='localfile')[0]
-    for field in cfg.keys():
-        if field != 'valid_value':
-            assert str(cfg[field]) in str(api_answer[field]), "Wazuh API answer different from introduced configuration"
+    real_configuration = cfg.copy()
+    real_configuration.pop('valid_value')
+    api.compare_config_api_response(real_configuration, 'localfile')
 
 
 def test_ignore_binaries_invalid(get_configuration, configure_environment, restart_logcollector):

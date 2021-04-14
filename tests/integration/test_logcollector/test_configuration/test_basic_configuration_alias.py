@@ -17,23 +17,24 @@ pytestmark = pytest.mark.tier(level=0)
 # Configuration
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
+
 local_internal_options = {
-    'logcollector.debug': 2
+    'logcollector.remote_commands': 2
 }
 
 if sys.platform == 'win32':
-    command = r'C:\testing\file.txt'
+    command = 'tasklist'
 else:
-    command = '/tmp/testing.txt'
+    command = 'ps -aux'
 
 parameters = [
-    {'LOG_FORMAT': 'command', 'COMMAND': 'echo TESTING', 'ALIAS': 'alias'},
-    {'LOG_FORMAT': 'full_command', 'COMMAND': 'echo TESTING', 'ALIAS': 'alias2'}
+    {'LOG_FORMAT': 'command', 'COMMAND': f'{command}', 'ALIAS': 'alias'},
+    {'LOG_FORMAT': 'full_command', 'COMMAND': f'{command}', 'ALIAS': 'alias2'}
 ]
 
 metadata = [
-    {'log_format': 'command', 'command': 'echo TESTING', 'alias': 'alias'},
-    {'log_format': 'full_command', 'command': 'echo TESTING', 'alias': 'alias2'}
+    {'log_format': 'command', 'command': f'{command}', 'alias': 'alias'},
+    {'log_format': 'full_command', 'command': f'{command}', 'alias': 'alias2'}
 ]
 
 for _ in len(parameters):
@@ -53,7 +54,14 @@ def get_configuration(request):
     return request.param
 
 
-def test_configuration_alias(get_configuration, configure_environment, restart_logcollector):
+@pytest.fixture(scope="module")
+def get_local_internal_options():
+    """Get configurations from the module."""
+    return local_internal_options
+
+
+def test_configuration_alias(get_local_internal_options, configure_local_internal_options,
+                             get_configuration, configure_environment, restart_logcollector):
     """
     """
 

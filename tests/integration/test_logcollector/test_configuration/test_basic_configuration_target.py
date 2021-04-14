@@ -62,10 +62,9 @@ def test_configuration_target_valid(get_configuration, configure_environment, re
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                 error_message="The expected error output has not been produced")
 
-    api_answer = api.get_manager_configuration(section='localfile')[0]
-    for field in cfg.keys():
-        if field != 'valid_value' and field != 'socket_path' and field != 'socket_name':
-            assert str(cfg[field]) in str(api_answer[field]), "Wazuh API answer different from introduced configuration"
+    real_configuration = cfg.copy()
+    real_configuration.pop('valid_value')
+    api.compare_config_api_response(real_configuration, 'localfile')
 
 
 def test_configuration_target_invalid(get_configuration, configure_environment, restart_logcollector):

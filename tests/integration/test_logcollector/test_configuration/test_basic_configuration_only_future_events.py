@@ -4,6 +4,7 @@
 
 import os
 import pytest
+import sys
 
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 import wazuh_testing.generic_callbacks as gc
@@ -17,26 +18,30 @@ pytestmark = pytest.mark.tier(level=0)
 # Configuration
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
-local_internal_options = {
-    'logcollector.debug': 2
-}
+
+if sys.platform == 'win32':
+    location = r'C:\testing.txt'
+else:
+    location = '/tmp/test.txt'
+
+
 parameters = [
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'syslog', 'ONLY_FUTURE_EVENTS': 'yes'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'syslog', 'ONLY_FUTURE_EVENTS': 'no'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'syslog', 'ONLY_FUTURE_EVENTS': 'yesTesting'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'syslog', 'ONLY_FUTURE_EVENTS': 'noTesting'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'syslog', 'ONLY_FUTURE_EVENTS': 'testingvalue'},
-    {'LOCATION': '/tmp/test.txt', 'LOG_FORMAT': 'syslog', 'ONLY_FUTURE_EVENTS': '1234'}
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'ONLY_FUTURE_EVENTS': 'yes'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'ONLY_FUTURE_EVENTS': 'no'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'ONLY_FUTURE_EVENTS': 'yesTesting'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'ONLY_FUTURE_EVENTS': 'noTesting'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'ONLY_FUTURE_EVENTS': 'testingvalue'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'ONLY_FUTURE_EVENTS': '1234'}
 
 ]
 
 metadata = [
-    {'location': '/tmp/test.txt', 'log_format': 'syslog', 'only-future-events': 'yes', 'valid_value': True},
-    {'location': '/tmp/test.txt', 'log_format': 'syslog', 'only-future-events': 'no', 'valid_value': True},
-    {'location': '/tmp/test.txt', 'log_format': 'syslog', 'only-future-events': 'yesTesting', 'valid_value': False},
-    {'location': '/tmp/test.txt', 'log_format': 'syslog', 'only-future-events': 'noTesting', 'valid_value': False},
-    {'location': '/tmp/test.txt', 'log_format': 'syslog', 'only-future-events': 'testingvalue', 'valid_value': False},
-    {'location': '/tmp/test.txt', 'log_format': 'syslog', 'only-future-events': '1234', 'valid_value': False}
+    {'location': f'{location}', 'log_format': 'syslog', 'only-future-events': 'yes', 'valid_value': True},
+    {'location': f'{location}', 'log_format': 'syslog', 'only-future-events': 'no', 'valid_value': True},
+    {'location': f'{location}', 'log_format': 'syslog', 'only-future-events': 'yesTesting', 'valid_value': False},
+    {'location': f'{location}', 'log_format': 'syslog', 'only-future-events': 'noTesting', 'valid_value': False},
+    {'location': f'{location}', 'log_format': 'syslog', 'only-future-events': 'testingvalue', 'valid_value': False},
+    {'location': f'{location}', 'log_format': 'syslog', 'only-future-events': '1234', 'valid_value': False}
 
 ]
 
@@ -61,10 +66,9 @@ def test_only_future_events_valid(get_configuration, configure_environment, rest
     if not cfg['valid_value']:
         pytest.skip('Invalid values provided')
 
-    api_answer = api.get_manager_configuration(section='localfile')[0]
-    for field in cfg.keys():
-        if field != 'valid_value':
-            assert str(cfg[field]) in str(api_answer[field]), "Wazuh API answer different from introduced configuration"
+    real_configuration = cfg.copy()
+    real_configuration.pop('valid_value')
+    api.compare_config_api_response(real_configuration, 'localfile')
 
 
 def test_only_future_events_invalid(get_configuration, configure_environment, restart_logcollector):
