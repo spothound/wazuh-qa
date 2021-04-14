@@ -21,8 +21,11 @@ configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.ya
 
 if sys.platform == 'win32':
     location = '/tmp/test.txt'
+    wazuh_configuration = 'ossec.conf'
+
 else:
     location = r'C:\testing.txt'
+    wazuh_configuration = 'etc/ossec.conf'
 
 parameters = [
     {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'IGNORE_BINARIES': 'yes'},
@@ -77,14 +80,17 @@ def test_ignore_binaries_invalid(get_configuration, configure_environment, resta
     if cfg['valid_value']:
         pytest.skip('Invalid values provided')
 
-    log_callback = gc.callback_invalid_value('ignore_binaries', cfg['ignore_binaries'], LOG_COLLECTOR_DETECTOR_PREFIX)
+    log_callback = gc.callback_invalid_value('ignore_binaries', cfg['ignore_binaries'], LOG_COLLECTOR_DETECTOR_PREFIX,
+                                             conf_path=f'{wazuh_configuration}')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
-    log_callback = gc.callback_error_in_configuration('ERROR', LOG_COLLECTOR_DETECTOR_PREFIX)
+    log_callback = gc.callback_error_in_configuration('ERROR', LOG_COLLECTOR_DETECTOR_PREFIX,
+                                                      conf_path=f'{wazuh_configuration}')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
-    log_callback = gc.callback_error_in_configuration('CRITICAL', LOG_COLLECTOR_DETECTOR_PREFIX)
+    log_callback = gc.callback_error_in_configuration('CRITICAL', LOG_COLLECTOR_DETECTOR_PREFIX,
+                                                      conf_path=f'{wazuh_configuration}')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
