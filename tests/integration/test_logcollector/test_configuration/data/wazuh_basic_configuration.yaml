@@ -102,7 +102,7 @@
     - location:
         value: LOCATION
     - log_format:
-         value: 'syslog'
+         value: LOG_FORMAT
     - age:
          value: AGE
 

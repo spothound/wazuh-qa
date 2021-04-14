@@ -24,37 +24,32 @@ else:
     location = '/tmp/testing.txt'
 
 parameters = [
-    {'LOCATION': f'{location}', 'AGE': '3s'},
-    {'LOCATION': f'{location}', 'AGE': '4000s'},
-    {'LOCATION': f'{location}', 'AGE': '5m'},
-    {'LOCATION': f'{location}', 'AGE': '99h'},
-    {'LOCATION': f'{location}', 'AGE': '94201d'},
-    {'LOCATION': f'{location}', 'AGE': '44sTesting'},
-    {'LOCATION': f'{location}', 'AGE': 'Testing44s'},
-    {'LOCATION': f'{location}', 'AGE': '9hTesting'},
-    {'LOCATION': f'{location}', 'AGE': '400mTesting'},
-    {'LOCATION': f'{location}', 'AGE': '3992'},
-    {'LOCATION': f'{location}', 'AGE': 'Testing'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'AGE': '3s'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'AGE': '4000s'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'AGE': '5m'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'AGE': '99h'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'AGE': '94201d'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'AGE': '44sTesting'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'AGE': 'Testing44s'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'AGE': '9hTesting'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'AGE': '400mTesting'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'AGE': '3992'},
+    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'AGE': 'Testing'},
 ]
 
 metadata = [
-    {'location': f'{location}', 'age': '3s', 'valid_value': True},
-    {'location': f'{location}', 'age': '4000s', 'valid_value': True},
-    {'location': f'{location}', 'age': '5m', 'valid_value': True},
-    {'location': f'{location}', 'age': '99h', 'valid_value': True},
-    {'location': f'{location}', 'age': '94201d', 'valid_value': True},
-    {'location': f'{location}', 'age': '44sTesting', 'valid_value': False},
-    {'location': f'{location}', 'age': 'Testing44s', 'valid_value': False},
-    {'location': f'{location}', 'age': '9hTesting', 'valid_value': False},
-    {'location': f'{location}', 'age': '400mTesting', 'valid_value': False},
-    {'location': f'{location}', 'age': '3992', 'valid_value': False},
-    {'location': f'{location}','age': 'Testing', 'valid_value': False},
+    {'location': f'{location}', 'log_format': 'syslog', 'age': '3s', 'valid_value': True},
+    {'location': f'{location}', 'log_format': 'syslog', 'age': '4000s', 'valid_value': True},
+    {'location': f'{location}', 'log_format': 'syslog', 'age': '5m', 'valid_value': True},
+    {'location': f'{location}', 'log_format': 'syslog', 'age': '99h', 'valid_value': True},
+    {'location': f'{location}', 'log_format': 'syslog', 'age': '94201d', 'valid_value': True},
+    {'location': f'{location}', 'log_format': 'syslog', 'age': '44sTesting', 'valid_value': False},
+    {'location': f'{location}', 'log_format': 'syslog', 'age': 'Testing44s', 'valid_value': False},
+    {'location': f'{location}', 'log_format': 'syslog', 'age': '9hTesting', 'valid_value': False},
+    {'location': f'{location}', 'log_format': 'syslog', 'age': '400mTesting', 'valid_value': False},
+    {'location': f'{location}', 'log_format': 'syslog', 'age': '3992', 'valid_value': False},
+    {'location': f'{location}', 'log_format': 'syslog', 'age': 'Testing', 'valid_value': False},
 ]
-
-for _ in len(parameters):
-    parameters['LOCATION'] = location
-    metadata['location'] = location
-
 
 configurations = load_wazuh_configurations(configurations_path, __name__,
                                            params=parameters,
@@ -88,7 +83,7 @@ def test_configuration_age_invalid(get_configuration, configure_environment, res
     if cfg['valid_value']:
         pytest.skip('Invalid values provided')
 
-    log_callback = gc.callback_invalid_value('age', cfg['age'], LOG_COLLECTOR_DETECTOR_PREFIX)
+    log_callback = gc.callback_invalid_conf_for_localfile('age', 'ERROR', LOG_COLLECTOR_DETECTOR_PREFIX)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
@@ -99,3 +94,5 @@ def test_configuration_age_invalid(get_configuration, configure_environment, res
     log_callback = gc.callback_error_in_configuration('CRITICAL', LOG_COLLECTOR_DETECTOR_PREFIX)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
+
+
