@@ -83,7 +83,7 @@ def test_configuration_age_invalid(get_configuration, configure_environment, res
     if cfg['valid_value']:
         pytest.skip('Invalid values provided')
 
-    log_callback = gc.callback_invalid_conf_for_localfile('age', 'ERROR', LOG_COLLECTOR_DETECTOR_PREFIX)
+    log_callback = gc.callback_invalid_conf_for_localfile('age', LOG_COLLECTOR_DETECTOR_PREFIX, 'ERROR')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 

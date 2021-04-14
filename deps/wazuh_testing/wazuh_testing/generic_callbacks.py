@@ -29,6 +29,6 @@ def callback_error_in_configuration(severity, wazuh_daemon):
     return monitoring.make_callback(pattern=msg, prefix=wazuh_daemon)
 
 
-def callback_invalid_conf_for_localfile(field, severity='ERROR', wazuh_daemon):
+def callback_invalid_conf_for_localfile(field, wazuh_daemon,  severity='ERROR'):
     msg = fr"f{severity}: Invalid f{field} for localfile"
     return monitoring.make_callback(pattern=msg, prefix=wazuh_daemon)
