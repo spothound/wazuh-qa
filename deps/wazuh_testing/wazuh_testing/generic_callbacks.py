@@ -16,7 +16,7 @@ def callback_invalid_value(option, value, wazuh_daemon, severity='ERROR'):
     return monitoring.make_callback(pattern=msg, prefix=wazuh_daemon)
 
 
-def callback_error_in_configuration(severity, wazuh_daemon):
+def callback_error_in_configuration(severity, wazuh_daemon, conf_path=WAZUH_CONF):
     """Create a callback to detect configuration error in ossec.conf file.
 
     Args:
@@ -25,10 +25,10 @@ def callback_error_in_configuration(severity, wazuh_daemon):
     Returns:
         callable: callback to detect this event.
     """
-    msg = fr"{severity}: \(\d+\): Configuration error at '{WAZUH_CONF}'."
+    msg = fr"{severity}: \(\d+\): Configuration error at '{conf_path}'."
     return monitoring.make_callback(pattern=msg, prefix=wazuh_daemon)
 
 
 def callback_invalid_conf_for_localfile(field, wazuh_daemon,  severity='ERROR'):
-    msg = fr"f{severity}: Invalid f{field} for localfile"
+    msg = fr"{severity}: Invalid {field} for localfile"
     return monitoring.make_callback(pattern=msg, prefix=wazuh_daemon)

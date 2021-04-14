@@ -73,7 +73,7 @@ def test_configuration_age_valid(get_configuration, configure_environment, resta
 
     real_configuration = cfg.copy()
     real_configuration.pop('valid_value')
-    api.compare_config_api_response(real_configuration, 'localfile')
+    api.compare_config_api_response([real_configuration], 'localfile')
 
 
 def test_configuration_age_invalid(get_configuration, configure_environment, restart_logcollector):
@@ -87,11 +87,13 @@ def test_configuration_age_invalid(get_configuration, configure_environment, res
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
-    log_callback = gc.callback_error_in_configuration('ERROR', LOG_COLLECTOR_DETECTOR_PREFIX)
+    log_callback = gc.callback_error_in_configuration('ERROR', LOG_COLLECTOR_DETECTOR_PREFIX,
+                                                      conf_path='/etc/ossec.conf')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
-    log_callback = gc.callback_error_in_configuration('CRITICAL', LOG_COLLECTOR_DETECTOR_PREFIX)
+    log_callback = gc.callback_error_in_configuration('CRITICAL', LOG_COLLECTOR_DETECTOR_PREFIX,
+                                                      conf_path='/etc/ossec.conf')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
