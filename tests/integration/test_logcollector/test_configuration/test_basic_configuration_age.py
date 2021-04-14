@@ -20,8 +20,10 @@ configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.ya
 
 if sys.platform == 'win32':
     location = r'C:\testing\file.txt'
+    wazuh_configuration = 'ossec.conf'
 else:
     location = '/tmp/testing.txt'
+    wazuh_configuration = 'etc/ossec.conf'
 
 parameters = [
     {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'AGE': '3s'},
@@ -89,12 +91,12 @@ def test_configuration_age_invalid(get_configuration, configure_environment, res
                             error_message="The expected error output has not been produced")
 
     log_callback = gc.callback_error_in_configuration('ERROR', LOG_COLLECTOR_DETECTOR_PREFIX,
-                                                      conf_path='etc/ossec.conf')
+                                                      conf_path=f'{wazuh_configuration}')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
     log_callback = gc.callback_error_in_configuration('CRITICAL', LOG_COLLECTOR_DETECTOR_PREFIX,
-                                                      conf_path='etc/ossec.conf')
+                                                      conf_path=f'{wazuh_configuration}')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 

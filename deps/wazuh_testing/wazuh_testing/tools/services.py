@@ -7,8 +7,6 @@ import socket
 import subprocess
 import sys
 import time
-from subprocess import check_call
-
 import psutil
 
 from wazuh_testing.tools import WAZUH_PATH, get_service, WAZUH_SOCKETS, QUEUE_DB_PATH, WAZUH_OPTIONAL_SOCKETS
@@ -29,7 +27,7 @@ def restart_wazuh_daemon(daemon):
             proc.terminate()
 
     daemon_path = os.path.join(WAZUH_PATH, 'bin')
-    check_call([f'{daemon_path}/{daemon}'])
+    subprocess.check_call([f'{daemon_path}/{daemon}'])
 
 
 def restart_wazuh_with_new_conf(new_conf, daemon='wazuh-syscheckd'):
@@ -129,7 +127,7 @@ def control_service(action, daemon=None, debug_mode=False):
                 delete_sockets(WAZUH_SOCKETS[daemon])
             else:
                 daemon_path = os.path.join(WAZUH_PATH, 'bin')
-                check_call([f'{daemon_path}/{daemon}', '' if not debug_mode else '-dd'])
+                subprocess.check_call([f'{daemon_path}/{daemon}', '' if not debug_mode else '-dd'])
             result = 0
 
     if result != 0:
