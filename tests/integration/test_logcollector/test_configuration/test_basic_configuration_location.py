@@ -21,7 +21,7 @@ configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.ya
 
 wazuh_component = get_service()
 
-if wazuh_component:
+if wazuh_component == 'wazuh-manager':
     prefix = LOG_COLLECTOR_DETECTOR_PREFIX
 else:
     prefix = AGENT_DETECTOR_PREFIX
