@@ -20,6 +20,7 @@ pytestmark = pytest.mark.tier(level=0)
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
 
+
 parameters = [
     {'LOG_FORMAT': 'eventchannel', 'QUERY': 'Event[System/EventID = 4624]'},
     {'LOG_FORMAT': 'eventchannel', 'QUERY': 'Event[System/EventID = 1343 and '

@@ -8,7 +8,7 @@ import sys
 import wazuh_testing.api as api
 import wazuh_testing.logcollector as logcollector
 from wazuh_testing.tools.configuration import load_wazuh_configurations
-from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX
+from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX, AGENT_DETECTOR_PREFIX
 import wazuh_testing.generic_callbacks as gc
 from wazuh_testing.tools import get_service
 
@@ -22,6 +22,12 @@ configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.ya
 local_internal_options = {
     'logcollector.remote_commands': 1
 }
+
+if get_service() == 'wazuh-manager':
+    prefix = LOG_COLLECTOR_DETECTOR_PREFIX
+else:
+    prefix = AGENT_DETECTOR_PREFIX
+
 
 if sys.platform == 'win32':
     command = 'tasklist'
@@ -82,7 +88,7 @@ def check_configuration_frequency_valid(cfg):
     """
     """
 
-    log_callback = logcollector.callback_monitoring_command(cfg['log_format'], cfg['command'])
+    log_callback = logcollector.callback_monitoring_command(cfg['log_format'], cfg['command'], prefix=prefix)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
@@ -98,16 +104,16 @@ def check_configuration_frequency_invalid(cfg):
     if cfg['frequency'] in problematic_values:
         pytest.xfail("Logcolector accepts invalid values. Issue: https://github.com/wazuh/wazuh/issues/8158")
 
-    log_callback = gc.callback_invalid_value('frequency', cfg['frequency'], LOG_COLLECTOR_DETECTOR_PREFIX)
+    log_callback = gc.callback_invalid_value('frequency', cfg['frequency'], prefix=prefix)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
-    log_callback = gc.callback_error_in_configuration('ERROR', LOG_COLLECTOR_DETECTOR_PREFIX,
+    log_callback = gc.callback_error_in_configuration('ERROR', LOG_COLLECTOR_DETECTOR_PREFIX, prefix=prefix,
                                                       conf_path=f'{wazuh_configuration}')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
-    log_callback = gc.callback_error_in_configuration('CRITICAL', LOG_COLLECTOR_DETECTOR_PREFIX,
+    log_callback = gc.callback_error_in_configuration('CRITICAL', LOG_COLLECTOR_DETECTOR_PREFIX, prefix=prefix,
                                                       conf_path=f'{wazuh_configuration}')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")

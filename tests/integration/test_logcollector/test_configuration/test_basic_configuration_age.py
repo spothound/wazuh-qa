@@ -5,13 +5,11 @@ import os
 import pytest
 import sys
 import wazuh_testing.api as api
-from wazuh_testing.tools import LOG_FILE_PATH, get_service
+from wazuh_testing.tools import get_service
 from wazuh_testing.tools.configuration import load_wazuh_configurations
-from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX, AGENT_DETECTOR_PREFIX, FileMonitor
+from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX, AGENT_DETECTOR_PREFIX
 import wazuh_testing.generic_callbacks as gc
 import wazuh_testing.logcollector as logcollector
-
-wazuh_log_monitor = FileMonitor(LOG_FILE_PATH)
 
 # Marks
 pytestmark = pytest.mark.tier(level=0)
@@ -20,14 +18,18 @@ pytestmark = pytest.mark.tier(level=0)
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
 
+if get_service() == 'wazuh-manager':
+    prefix = LOG_COLLECTOR_DETECTOR_PREFIX
+else:
+    prefix = AGENT_DETECTOR_PREFIX
+
+
 if sys.platform == 'win32':
     location = r'C:\testing\file.txt'
     wazuh_configuration = 'ossec.conf'
-    prefix = AGENT_DETECTOR_PREFIX
 else:
     location = '/tmp/testing.txt'
     wazuh_configuration = 'etc/ossec.conf'
-    prefix = LOG_COLLECTOR_DETECTOR_PREFIX
 
 parameters = [
     {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'AGE': '3s'},
@@ -76,16 +78,16 @@ def check_configuration_age_invalid(cfg):
     if cfg['age'] in problematic_values:
         pytest.xfail("Logcolector accepts invalid values. Issue: https://github.com/wazuh/wazuh/issues/8158")
 
-    log_callback = gc.callback_invalid_conf_for_localfile('age', prefix, 'ERROR')
+    log_callback = gc.callback_invalid_conf_for_localfile('age', prefix=prefix, severity='ERROR')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
-    log_callback = gc.callback_error_in_configuration('ERROR', prefix,
+    log_callback = gc.callback_error_in_configuration('ERROR', prefix=prefix,
                                                       conf_path=f'{wazuh_configuration}')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
     if sys.platform != 'win32':
-        log_callback = gc.callback_error_in_configuration('CRITICAL', prefix,
+        log_callback = gc.callback_error_in_configuration('CRITICAL', prefix=prefix,
                                                           conf_path=f'{wazuh_configuration}')
         wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                 error_message="The expected error output has not been produced")

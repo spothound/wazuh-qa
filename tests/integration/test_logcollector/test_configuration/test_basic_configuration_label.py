@@ -8,6 +8,9 @@ import pytest
 import wazuh_testing.api as api
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 from wazuh_testing.tools import get_service
+import wazuh_testing.logcollector as logcollector
+from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX, AGENT_DETECTOR_PREFIX
+
 
 # Marks
 pytestmark = pytest.mark.tier(level=0)
@@ -20,6 +23,13 @@ if sys.platform == 'win32':
     location = r'C:\TESTING\testfile.txt'
 else:
     location = '/tmp/testing.txt'
+
+
+if get_service() == 'wazuh-manager':
+    prefix = LOG_COLLECTOR_DETECTOR_PREFIX
+else:
+    prefix = AGENT_DETECTOR_PREFIX
+
 
 parameters = [
     {'LOCATION': f'{location}', 'LABEL': 'myapp', 'KEY': '@source'},
@@ -60,6 +70,7 @@ def test_configuration_label(get_configuration, configure_environment, restart_l
     """
     cfg = get_configuration['metadata']
 
+    log_callback = logcollector.callback_analyzing_file(cfg['location'], prefix=prefix)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 

@@ -10,7 +10,7 @@ from wazuh_testing.tools.configuration import load_wazuh_configurations
 import wazuh_testing.generic_callbacks as gc
 import wazuh_testing.api as api
 import wazuh_testing.logcollector as logcollector
-from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX
+from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX, AGENT_DETECTOR_PREFIX
 from wazuh_testing.tools import get_service
 
 
@@ -26,6 +26,12 @@ if sys.platform == 'win32':
     location = r'C:\testing.txt'
 else:
     location = '/tmp/test.txt'
+
+
+if get_service() == 'wazuh-manager':
+    prefix = LOG_COLLECTOR_DETECTOR_PREFIX
+else:
+    prefix = AGENT_DETECTOR_PREFIX
 
 
 parameters = [
@@ -57,7 +63,7 @@ configuration_ids = [f"{x['LOCATION'], x['LOG_FORMAT'], x['ONLY_FUTURE_EVENTS']}
 def check_only_future_events_valid(cfg):
     """
     """
-    log_callback = logcollector.callback_analyzing_file(cfg['location'])
+    log_callback = logcollector.callback_analyzing_file(cfg['location'], prefix=prefix)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
@@ -71,7 +77,7 @@ def check_only_future_events_invalid(cfg):
     """
     """
     log_callback = gc.callback_invalid_value('only-future-events', cfg['only-future-events'],
-                                             LOG_COLLECTOR_DETECTOR_PREFIX, severity="WARNING")
+                                             LOG_COLLECTOR_DETECTOR_PREFIX, severity="WARNING", prefix=prefix)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 

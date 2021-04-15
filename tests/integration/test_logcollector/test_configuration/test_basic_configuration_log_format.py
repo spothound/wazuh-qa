@@ -10,7 +10,7 @@ from wazuh_testing.tools.configuration import load_wazuh_configurations
 import wazuh_testing.logcollector as logcollector
 import wazuh_testing.generic_callbacks as gc
 import wazuh_testing.api as api
-from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX
+from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX, AGENT_DETECTOR_PREFIX
 from wazuh_testing.tools import get_service
 
 
@@ -33,6 +33,13 @@ if sys.platform == 'win32':
 else:
     location = '/tmp/test.txt'
     wazuh_configuration = 'etc/ossec.conf'
+
+
+if get_service() == 'wazuh-manager':
+    prefix = LOG_COLLECTOR_DETECTOR_PREFIX
+else:
+    prefix = AGENT_DETECTOR_PREFIX
+
 
 parameters = [
     {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'COMMAND': 'example-command'},
@@ -122,18 +129,18 @@ def check_log_format_valid(cfg):
     """
     if cfg['log_format'] not in log_format_not_print_analyzing_info :
 
-        log_callback = logcollector.callback_analyzing_file(cfg['location'])
+        log_callback = logcollector.callback_analyzing_file(cfg['location'], prefix=prefix)
         wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                 error_message="The expected error output has not been produced")
     elif 'command' in cfg['log_format']:
 
-        log_callback = logcollector.callback_monitoring_command(cfg['log_format'], cfg['command'])
+        log_callback = logcollector.callback_monitoring_command(cfg['log_format'], cfg['command'], prefix=prefix)
         wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                 error_message="The expected error output has not been produced")
 
     elif cfg['log_format'] == 'djb-multilog':
 
-        log_callback = logcollector.callback_monitoring_djb_multilog(cfg['location'])
+        log_callback = logcollector.callback_monitoring_djb_multilog(cfg['location'], prefix=prefix)
         wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                 error_message="The expected error output has not been produced")
 
@@ -150,16 +157,16 @@ def check_log_format_invalid(cfg):
     if cfg['valid_value']:
         pytest.skip('Valid values provided')
 
-    log_callback = gc.callback_invalid_value('log_format', cfg['log_format'], LOG_COLLECTOR_DETECTOR_PREFIX)
+    log_callback = gc.callback_invalid_value('log_format', cfg['log_format'], prefix=prefix)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
-    log_callback = gc.callback_error_in_configuration('ERROR', LOG_COLLECTOR_DETECTOR_PREFIX,
+    log_callback = gc.callback_error_in_configuration('ERROR', LOG_COLLECTOR_DETECTOR_PREFIX, prefix=prefix,
                                                       conf_path=f'{wazuh_configuration}')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
-    log_callback = gc.callback_error_in_configuration('CRITICAL', LOG_COLLECTOR_DETECTOR_PREFIX,
+    log_callback = gc.callback_error_in_configuration('CRITICAL', LOG_COLLECTOR_DETECTOR_PREFIX,  prefix=prefix,
                                                       conf_path=f'{wazuh_configuration}')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")

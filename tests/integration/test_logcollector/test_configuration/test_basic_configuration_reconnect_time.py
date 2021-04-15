@@ -9,6 +9,7 @@ import wazuh_testing.api as api
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 import wazuh_testing.logcollector as logcollector
 from wazuh_testing.tools import get_service
+from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX, AGENT_DETECTOR_PREFIX
 
 
 # Marks
@@ -25,6 +26,13 @@ if sys.platform == 'win32':
 else:
     location = '/tmp/test.txt'
     wazuh_configuration = 'etc/ossec.conf'
+
+
+if get_service() == 'wazuh-manager':
+    prefix = LOG_COLLECTOR_DETECTOR_PREFIX
+else:
+    prefix = AGENT_DETECTOR_PREFIX
+
 
 parameters = [
     {'LOG_FORMAT': 'syslog', 'LOCATION': f'{location}', 'RECONNECT_TIME': '3s'},
@@ -74,7 +82,7 @@ def test_configuration_reconnect_time_valid(cfg):
 def check_configuration_reconnect_time_invalid(cfg):
     """
     """
-    log_callback = logcollector.callback_invalid_reconnection_time()
+    log_callback = logcollector.callback_invalid_reconnection_time(prefix=prefix)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
