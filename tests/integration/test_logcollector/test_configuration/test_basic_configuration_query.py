@@ -60,15 +60,6 @@ configurations = load_wazuh_configurations(configurations_path, __name__,
 configuration_ids = [f"{x['LOG_FORMAT'], x['QUERY']}" for x in parameters]
 
 
-# fixtures
-@pytest.fixture(scope="module", params=configurations, ids=configuration_ids)
-def get_configuration(request):
-    """Get configurations from the module."""
-    return request.param
-
-
-@pytest.mark.skipif(sys.platform != 'win32',
-                    reason="Windows is required for this test")
 def check_configuration_query_valid(cfg):
     """
     """
@@ -79,9 +70,7 @@ def check_configuration_query_valid(cfg):
         api.compare_config_api_response([real_configuration], 'localfile')
 
 
-@pytest.mark.skipif(sys.platform != 'win32',
-                    reason="Windows is required for this test")
-def check_configuration_query_invalid(cfg):
+def check_configuration_query_invalid():
     """
     """
     log_callback = logcollector.callback_query_bad_format('SECURITY')
@@ -89,6 +78,15 @@ def check_configuration_query_invalid(cfg):
                             error_message="The expected error output has not been produced")
 
 
+# fixtures
+@pytest.fixture(scope="module", params=configurations, ids=configuration_ids)
+def get_configuration(request):
+    """Get configurations from the module."""
+    return request.param
+
+
+@pytest.mark.skipif(sys.platform != 'win32',
+                    reason="Windows is required for this test")
 def test_configuration_query(get_configuration, configure_environment, restart_logcollector):
     cfg = get_configuration['metadata']
     if cfg['valid_value']:
