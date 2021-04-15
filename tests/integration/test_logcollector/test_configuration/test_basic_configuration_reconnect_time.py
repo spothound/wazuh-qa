@@ -7,8 +7,8 @@ import pytest
 import sys
 import wazuh_testing.api as api
 from wazuh_testing.tools.configuration import load_wazuh_configurations
-import wazuh_testing.generic_callbacks as gc
 import wazuh_testing.logcollector as logcollector
+from wazuh_testing.tools import get_service
 
 
 # Marks
@@ -60,6 +60,25 @@ configurations = load_wazuh_configurations(configurations_path, __name__,
 configuration_ids = [f"{x['LOG_FORMAT'], x['LOCATION'], x['RECONNECT_TIME']}" for x in parameters]
 
 
+def test_configuration_reconnect_time_valid(cfg):
+    """
+    """
+    if get_service() == 'wazuh-manager':
+        real_configuration = cfg.copy()
+        real_configuration.pop('valid_value')
+        api.compare_config_api_response([real_configuration], 'localfile')
+
+
+@pytest.mark.skipif(sys.platform == 'win32',
+                    reason="Windows system currently does not support this test required")
+def check_configuration_reconnect_time_invalid(cfg):
+    """
+    """
+    log_callback = logcollector.callback_invalid_reconnection_time()
+    wazuh_log_monitor.start(timeout=5, callback=log_callback,
+                            error_message="The expected error output has not been produced")
+
+
 # fixtures
 @pytest.fixture(scope="module", params=configurations, ids=configuration_ids)
 def get_configuration(request):
@@ -67,28 +86,10 @@ def get_configuration(request):
     return request.param
 
 
-def test_configuration_reconnect_time_valid(get_configuration, configure_environment, restart_logcollector):
-    """
-    """
-    cfg = get_configuration['metadata']
-    if not cfg['valid_value']:
-        pytest.skip('Invalid values provided')
-
-    real_configuration = cfg.copy()
-    real_configuration.pop('valid_value')
-    api.compare_config_api_response([real_configuration], 'localfile')
-
-
-@pytest.mark.skipif(sys.platform == 'win32',
-                    reason="Windows system currently does not support this test required")
-def test_configuration_reconnect_time_invalid(get_configuration, configure_environment, restart_logcollector):
-    """
-    """
+def test_configuration_reconnect_time(get_configuration, configure_environment, restart_logcollector):
     cfg = get_configuration['metadata']
     if cfg['valid_value']:
-        pytest.skip('Invalid values provided')
-
-    log_callback = logcollector.callback_invalid_reconnection_time()
-    wazuh_log_monitor.start(timeout=5, callback=log_callback,
-                            error_message="The expected error output has not been produced")
+        test_configuration_reconnect_time_valid(cfg)
+    else:
+        check_configuration_reconnect_time_invalid(cfg)
 

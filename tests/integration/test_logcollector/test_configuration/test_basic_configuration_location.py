@@ -7,6 +7,7 @@ import os
 import pytest
 import wazuh_testing.api as api
 from wazuh_testing.tools.configuration import load_wazuh_configurations
+from wazuh_testing.tools import get_service
 
 
 # Marks
@@ -94,4 +95,5 @@ def test_configuration_location(get_configuration, configure_environment, restar
     """
     """
     cfg = get_configuration['metadata']
-    api.compare_config_api_response([cfg], 'localfile')
+    if get_service() == 'wazuh-manager':
+        api.compare_config_api_response([cfg], 'localfile')

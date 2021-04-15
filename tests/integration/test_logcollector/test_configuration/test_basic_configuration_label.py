@@ -7,6 +7,7 @@ import sys
 import pytest
 import wazuh_testing.api as api
 from wazuh_testing.tools.configuration import load_wazuh_configurations
+from wazuh_testing.tools import get_service
 
 # Marks
 pytestmark = pytest.mark.tier(level=0)
@@ -54,13 +55,17 @@ def get_configuration(request):
     return request.param
 
 
-def test_configuration_label_valid(get_configuration, configure_environment, restart_logcollector):
+def test_configuration_label(get_configuration, configure_environment, restart_logcollector):
     """
     """
     cfg = get_configuration['metadata']
-    real_configuration = dict((key, cfg[key]) for key in ['location'])
-    real_configuration['label'] = {'key': cfg['key'], 'item': cfg['label']}
 
-    api.compare_config_api_response([real_configuration], 'localfile')
+    wazuh_log_monitor.start(timeout=5, callback=log_callback,
+                            error_message="The expected error output has not been produced")
+
+    if get_service() == 'wazuh-manager':
+        real_configuration = dict((key, cfg[key]) for key in ['location'])
+        real_configuration['label'] = {'key': cfg['key'], 'item': cfg['label']}
+        api.compare_config_api_response([real_configuration], 'localfile')
 
 

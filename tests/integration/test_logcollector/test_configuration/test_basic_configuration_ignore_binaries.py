@@ -8,6 +8,7 @@ import sys
 
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 import wazuh_testing.generic_callbacks as gc
+from wazuh_testing.tools import get_service
 
 import wazuh_testing.api as api
 from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX
@@ -62,27 +63,19 @@ def get_configuration(request):
     return request.param
 
 
-def test_ignore_binaries_valid(get_configuration, configure_environment, restart_logcollector):
+def check_ignore_binaries_valid(cfg):
     """
     """
-    cfg = get_configuration['metadata']
-    if not cfg['valid_value']:
-        pytest.skip('Invalid values provided')
-
     real_configuration = cfg.copy()
     real_configuration.pop('valid_value')
-    api.compare_config_api_response([real_configuration], 'localfile')
+    if get_service() == 'wazuh-manager':
+        api.compare_config_api_response([real_configuration], 'localfile')
 
 
-@pytest.mark.skipif(sys.platform == 'win32',
-                    reason="Windows system currently does not support this test required")
-def test_ignore_binaries_invalid(get_configuration, configure_environment, restart_logcollector):
+
+def check_ignore_binaries_invalid(cfg):
     """
     """
-    cfg = get_configuration['metadata']
-    if cfg['valid_value']:
-        pytest.skip('Invalid values provided')
-
     log_callback = gc.callback_invalid_value('ignore_binaries', cfg['ignore_binaries'], LOG_COLLECTOR_DETECTOR_PREFIX)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
@@ -96,3 +89,13 @@ def test_ignore_binaries_invalid(get_configuration, configure_environment, resta
                                                       conf_path=f'{wazuh_configuration}')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
+
+
+def test_ignore_binaries(get_configuration, configure_environment, restart_logcollector):
+    """
+    """
+    cfg = get_configuration['metadata']
+    if cfg['valid_value']:
+        check_ignore_binaries_valid(cfg)
+    else:
+        check_ignore_binaries_invalid(cfg)

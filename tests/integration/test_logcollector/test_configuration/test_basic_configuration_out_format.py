@@ -7,6 +7,8 @@ import pytest
 import wazuh_testing.api as api
 import wazuh_testing.logcollector as logcollector
 from wazuh_testing.tools.configuration import load_wazuh_configurations
+from wazuh_testing.tools import get_service
+
 import sys
 
 
@@ -97,6 +99,27 @@ configuration_ids = \
     [f"{x['LOG_FORMAT'], x['TARGET'], x['SOCKET_NAME'], x['LOCATION'], x['SOCKET_PATH'], x['TARGET_OUT_FORMAT'], x['OUT_FORMAT']}" for x in parameters]
 
 
+def check_configuration_out_format_valid(cfg):
+    """
+    """
+    log_callback = logcollector.callback_socket_target(cfg['location'], cfg['target'])
+    wazuh_log_monitor.start(timeout=5, callback=log_callback,
+                                error_message="The expected error output has not been produced")
+
+    if get_service() == 'wazuh-manager':
+        real_configuration = dict((key, cfg[key]) for key in ('location', 'target', 'log_format'))
+        real_configuration['out_format'] = {'target': cfg['target_out_format'], 'item': cfg['out_format']}
+        api.compare_config_api_response([real_configuration], 'localfile')
+
+
+def check_configuration_out_format_invalid(cfg):
+    """
+    """
+    log_callback = logcollector.callback_log_target_not_found(cfg['location'], cfg['target_out_format'])
+    wazuh_log_monitor.start(timeout=5, callback=log_callback,
+                                error_message="The expected error output has not been produced")
+
+
 # fixtures
 @pytest.fixture(scope="module", params=configurations, ids=configuration_ids)
 def get_configuration(request):
@@ -104,32 +127,10 @@ def get_configuration(request):
     return request.param
 
 
-def test_configuration_out_format_valid(get_configuration, configure_environment, restart_logcollector):
-    """
-    """
-    cfg = get_configuration['metadata']
-    if not cfg['valid_value']:
-        pytest.skip('Invalid values provided')
-
-
-    log_callback = logcollector.callback_socket_target(cfg['location'], cfg['target'])
-    wazuh_log_monitor.start(timeout=5, callback=log_callback,
-                                error_message="The expected error output has not been produced")
-
-    real_configuration = dict((key, cfg[key]) for key in ('location', 'target', 'log_format'))
-    real_configuration['out_format'] = {'target': cfg['target_out_format'], 'item': cfg['out_format']}
-    api.compare_config_api_response([real_configuration], 'localfile')
-
-
-@pytest.mark.skipif(sys.platform == 'win32',
-                    reason="Windows system currently does not support this test required")
-def test_configuration_out_format_invalid(get_configuration, configure_environment, restart_logcollector):
-    """
-    """
+def test_configuration_out_format(get_configuration, configure_environment, restart_logcollector):
     cfg = get_configuration['metadata']
     if cfg['valid_value']:
-        pytest.skip('Invalid values provided')
+        check_configuration_out_format_valid(cfg)
+    else:
+        check_configuration_out_format_invalid(cfg)
 
-    log_callback = logcollector.callback_log_target_not_found(cfg['location'], cfg['target_out_format'])
-    wazuh_log_monitor.start(timeout=5, callback=log_callback,
-                                error_message="The expected error output has not been produced")

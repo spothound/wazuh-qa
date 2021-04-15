@@ -5,6 +5,7 @@
 import os
 import pytest
 import wazuh_testing.api as api
+from wazuh_testing.tools import get_service
 import wazuh_testing.logcollector as logcollector
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 
@@ -78,4 +79,5 @@ def test_configuration_command(get_local_internal_options, configure_local_inter
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
-    api.compare_config_api_response([cfg], 'localfile')
+    if get_service() == 'wazuh-manager':
+        api.compare_config_api_response([cfg], 'localfile')

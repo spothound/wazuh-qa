@@ -477,11 +477,17 @@ def configure_environment(get_configuration, request):
                 delete_registry(registry_parser[match.group(1)], match.group(2), KEY_WOW64_32KEY)
                 delete_registry(registry_parser[match.group(1)], match.group(2), KEY_WOW64_64KEY)
 
+    bad_configuration = False
     if sys.platform == 'win32':
-        control_service('start')
-
+        try:
+            control_service('start')
+        except ValueError:
+            bad_configuration = True
+            pass
     # Restore previous configuration
     write_wazuh_conf(backup_config)
+    if bad_configuration:
+        control_service('restart')
 
     # Call extra functions after yield
     if hasattr(request.module, 'extra_configuration_after_yield'):

@@ -11,6 +11,8 @@ import wazuh_testing.generic_callbacks as gc
 import wazuh_testing.api as api
 import wazuh_testing.logcollector as logcollector
 from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX
+from wazuh_testing.tools import get_service
+
 
 
 # Marks
@@ -46,12 +48,32 @@ metadata = [
 
 ]
 
-
 configurations = load_wazuh_configurations(configurations_path, __name__,
                                            params=parameters,
                                            metadata=metadata)
 configuration_ids = [f"{x['LOCATION'], x['LOG_FORMAT'], x['ONLY_FUTURE_EVENTS']}" for x in parameters]
 
+
+def check_only_future_events_valid(cfg):
+    """
+    """
+    log_callback = logcollector.callback_analyzing_file(cfg['location'])
+    wazuh_log_monitor.start(timeout=5, callback=log_callback,
+                            error_message="The expected error output has not been produced")
+
+    if get_service() == 'wazuh-manager':
+        real_configuration = cfg.copy()
+        real_configuration.pop('valid_value')
+        api.compare_config_api_response([real_configuration], 'localfile')
+
+
+def check_only_future_events_invalid(cfg):
+    """
+    """
+    log_callback = gc.callback_invalid_value('only-future-events', cfg['only-future-events'],
+                                             LOG_COLLECTOR_DETECTOR_PREFIX, severity="WARNING")
+    wazuh_log_monitor.start(timeout=5, callback=log_callback,
+                            error_message="The expected error output has not been produced")
 
 # fixtures
 @pytest.fixture(scope="module", params=configurations, ids=configuration_ids)
@@ -60,33 +82,11 @@ def get_configuration(request):
     return request.param
 
 
-def test_only_future_events_valid(get_configuration, configure_environment, restart_logcollector):
-    """
-    """
-    cfg = get_configuration['metadata']
-    if not cfg['valid_value']:
-        pytest.skip('Invalid values provided')
-
-    log_callback = logcollector.callback_analyzing_file(cfg['location'])
-    wazuh_log_monitor.start(timeout=5, callback=log_callback,
-                            error_message="The expected error output has not been produced")
-
-    real_configuration = cfg.copy()
-    real_configuration.pop('valid_value')
-    api.compare_config_api_response([real_configuration], 'localfile')
-
-
-@pytest.mark.skipif(sys.platform == 'win32',
-                    reason="Windows system currently does not support this test required")
-def test_only_future_events_invalid(get_configuration, configure_environment, restart_logcollector):
-    """
-    """
+def test_only_future_events(get_configuration, configure_environment, restart_logcollector):
     cfg = get_configuration['metadata']
     if cfg['valid_value']:
-        pytest.skip('Invalid values provided')
+        check_only_future_events_valid(cfg)
+    else:
+        check_only_future_events_invalid(cfg)
 
-    log_callback = gc.callback_invalid_value('only-future-events', cfg['only-future-events'],
-                                             LOG_COLLECTOR_DETECTOR_PREFIX, severity="WARNING")
-    wazuh_log_monitor.start(timeout=5, callback=log_callback,
-                            error_message="The expected error output has not been produced")
 

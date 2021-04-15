@@ -11,6 +11,8 @@ import wazuh_testing.logcollector as logcollector
 import wazuh_testing.generic_callbacks as gc
 import wazuh_testing.api as api
 from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX
+from wazuh_testing.tools import get_service
+
 
 
 # Marks
@@ -115,14 +117,9 @@ def get_local_internal_options():
     return local_internal_options 
 
 
-def test_log_format_valid(get_local_internal_options, configure_local_internal_options, get_configuration,
-                          configure_environment, restart_logcollector):
+def check_log_format_valid(cfg):
     """
     """
-    cfg = get_configuration['metadata']
-    if not cfg['valid_value']:
-        pytest.skip('Invalid values provided')
-
     if cfg['log_format'] not in log_format_not_print_analyzing_info :
 
         log_callback = logcollector.callback_analyzing_file(cfg['location'])
@@ -140,18 +137,15 @@ def test_log_format_valid(get_local_internal_options, configure_local_internal_o
         wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                 error_message="The expected error output has not been produced")
 
+    if get_service() == 'wazuh-manager':
+        real_configuration = cfg.copy()
+        real_configuration.pop('valid_value')
+        api.compare_config_api_response([real_configuration], 'localfile')
 
-    real_configuration = cfg.copy()
-    real_configuration.pop('valid_value')
-    api.compare_config_api_response([real_configuration], 'localfile')
 
-
-@pytest.mark.skipif(sys.platform == 'win32',
-                    reason="Windows system currently does not support this test required")
-def test_log_format_invalid(get_configuration, configure_environment, restart_logcollector):
+def check_log_format_invalid(cfg):
     """
     """
-    cfg = get_configuration['metadata']
 
     if cfg['valid_value']:
         pytest.skip('Valid values provided')
@@ -169,3 +163,11 @@ def test_log_format_invalid(get_configuration, configure_environment, restart_lo
                                                       conf_path=f'{wazuh_configuration}')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
+
+
+def test_log_format(get_configuration, configure_environment, restart_logcollector):
+    cfg = get_configuration['metadata']
+    if cfg['valid_value']:
+        check_log_format_valid(cfg)
+    else:
+        check_log_format_invalid(cfg)

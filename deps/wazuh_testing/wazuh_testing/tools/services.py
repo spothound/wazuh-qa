@@ -29,18 +29,18 @@ def restart_wazuh_daemon(daemon):
     daemon_path = os.path.join(WAZUH_PATH, 'bin')
     subprocess.check_call([f'{daemon_path}/{daemon}'])
 
-
+"""
 def restart_wazuh_with_new_conf(new_conf, daemon='wazuh-syscheckd'):
-    """
+    
     Restart Wazuh service applying a new ossec.conf
 
     Args:
         new_conf ( ET.ElementTree) : New config file.
         daemon (str, optional): Daemon to restart when applying the configuration.
-    """
+    
     write_wazuh_conf(new_conf)
     control_service('restart', daemon=daemon)
-
+"""
 
 def delete_sockets(path=None):
     """Delete a list of Wazuh socket files or all of them if None is specified.

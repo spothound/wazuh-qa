@@ -8,6 +8,8 @@ import wazuh_testing.api as api
 import wazuh_testing.logcollector as logcollector
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 import sys
+from wazuh_testing.tools import get_service
+
 
 # Marks
 pytestmark = pytest.mark.tier(level=0)
@@ -66,27 +68,29 @@ def get_configuration(request):
 
 @pytest.mark.skipif(sys.platform != 'win32',
                     reason="Windows is required for this test")
-def test_configuration_query_valid(get_configuration, configure_environment, restart_logcollector):
+def check_configuration_query_valid(cfg):
     """
     """
-    cfg = get_configuration['metadata']
-    if not cfg['valid_value']:
-        pytest.skip('Invalid values provided')
-
-    real_configuration = cfg.copy()
-    real_configuration.pop('valid_value')
-    api.compare_config_api_response([real_configuration], 'localfile')
+    if get_service() == 'wazuh-manager':
+        real_configuration = cfg.copy()
+        real_configuration.pop('valid_value')
+        api.compare_config_api_response([real_configuration], 'localfile')
 
 
 @pytest.mark.skipif(sys.platform != 'win32',
                     reason="Windows is required for this test")
-def test_configuration_query_invalid(get_configuration, configure_environment, restart_logcollector):
+def check_configuration_query_invalid(cfg):
     """
     """
-    cfg = get_configuration['metadata']
-    if cfg['valid_value']:
-        pytest.skip('Invalid values provided')
-
     log_callback = logcollector.callback_query_bad_format('SECURITY')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
+
+
+def test_configuration_query(get_configuration, configure_environment, restart_logcollector):
+    cfg = get_configuration['metadata']
+    if cfg['valid_value']:
+        check_configuration_query_valid(cfg)
+    else:
+        check_configuration_query_invalid(cfg)
+
