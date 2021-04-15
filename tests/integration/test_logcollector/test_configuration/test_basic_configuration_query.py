@@ -38,8 +38,6 @@ parameters = [
      },
     {'LOG_FORMAT': 'eventchannel', 'QUERY': 'Testing',
      },
-    {'LOG_FORMAT': 'eventchannel', 'QUERY': 'Event[System/TESTINGID = 344]',
-     },
 ]
 metadata = [
     {'log_format': 'eventchannel', 'query': 'Event[System/EventID = 4624]',
@@ -55,9 +53,6 @@ metadata = [
      'valid_value': True
      },
     {'log_format': 'eventchannel', 'query': 'Testing', 'valid_value': False},
-    {'log_format': 'eventchannel', 'query': 'Event[System/TESTINGID = 344]',
-     'valid_value': False
-     },
 ]
 
 configurations = load_wazuh_configurations(configurations_path, __name__,
