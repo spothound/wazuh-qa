@@ -80,7 +80,7 @@ def check_only_future_events_invalid(cfg):
     """
     """
     log_callback = gc.callback_invalid_value('only-future-events', cfg['only-future-events'],
-                                             LOG_COLLECTOR_DETECTOR_PREFIX, severity="WARNING", prefix=prefix)
+                                             prefix, severity="WARNING")
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
