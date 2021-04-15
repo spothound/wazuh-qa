@@ -2,8 +2,8 @@ from wazuh_testing.tools import monitoring
 
 
 def callback_analyzing_file(file):
-    msg = fr"INFO: \(\d+\): Analyzing file: '{file}'."
-    return monitoring.make_callback(pattern=msg, prefix=monitoring.LOG_COLLECTOR_DETECTOR_PREFIX)
+    msg = fr"Analyzing file: '{file}'."
+    return monitoring.make_callback(pattern=msg, prefix=AGENT_DETECTOR_PREFIX, escape=True)
 
 
 def callback_monitoring_command(log_format, command):
