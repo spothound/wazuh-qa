@@ -76,12 +76,13 @@ def test_configuration_reconnect_time_valid(cfg):
     if wazuh_component == 'wazuh-manager':
         real_configuration = cfg.copy()
         real_configuration.pop('valid_value')
+        api.wait_until_api_ready()
         api.compare_config_api_response([real_configuration], 'localfile')
 
 
 @pytest.mark.skipif(sys.platform == 'win32',
                     reason="Windows system currently does not support this test required")
-def check_configuration_reconnect_time_invalid(cfg):
+def check_configuration_reconnect_time_invalid():
     """
     """
     log_callback = logcollector.callback_invalid_reconnection_time(prefix=prefix)
@@ -101,5 +102,5 @@ def test_configuration_reconnect_time(get_configuration, configure_environment, 
     if cfg['valid_value']:
         test_configuration_reconnect_time_valid(cfg)
     else:
-        check_configuration_reconnect_time_invalid(cfg)
+        check_configuration_reconnect_time_invalid()
 

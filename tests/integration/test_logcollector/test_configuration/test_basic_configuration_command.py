@@ -89,4 +89,5 @@ def test_configuration_command(get_local_internal_options, configure_local_inter
                             error_message="The expected error output has not been produced")
 
     if wazuh_component == 'wazuh-manager':
+        api.wait_until_api_ready()
         api.compare_config_api_response([cfg], 'localfile')

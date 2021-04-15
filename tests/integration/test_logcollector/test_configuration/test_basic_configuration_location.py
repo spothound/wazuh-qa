@@ -106,4 +106,5 @@ def test_configuration_location(get_configuration, configure_environment, restar
     """
     cfg = get_configuration['metadata']
     if wazuh_component == 'wazuh-manager':
+        api.wait_until_api_ready()
         api.compare_config_api_response([cfg], 'localfile')

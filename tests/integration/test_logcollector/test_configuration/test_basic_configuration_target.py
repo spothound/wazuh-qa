@@ -65,6 +65,7 @@ def check_configuration_target_valid(cfg):
 
     if wazuh_component == 'wazuh-manager':
         real_configuration = dict((key, cfg[key]) for key in ('location', 'target', 'log_format'))
+        api.wait_until_api_ready()
         api.compare_config_api_response([real_configuration], 'localfile')
 
 

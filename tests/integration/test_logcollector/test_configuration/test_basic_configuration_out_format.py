@@ -118,6 +118,7 @@ def check_configuration_out_format_valid(cfg):
     if wazuh_component == 'wazuh-manager':
         real_configuration = dict((key, cfg[key]) for key in ('location', 'target', 'log_format'))
         real_configuration['out_format'] = {'target': cfg['target_out_format'], 'item': cfg['out_format']}
+        api.wait_until_api_ready()
         api.compare_config_api_response([real_configuration], 'localfile')
 
 

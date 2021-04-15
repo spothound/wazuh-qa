@@ -97,6 +97,7 @@ def check_configuration_frequency_valid(cfg):
     real_configuration = cfg.copy()
     real_configuration.pop('valid_value')
     if wazuh_component == 'wazuh-manager':
+        api.wait_until_api_ready()
         api.compare_config_api_response([real_configuration], 'localfile')
 
 

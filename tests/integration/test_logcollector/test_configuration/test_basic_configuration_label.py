@@ -79,6 +79,7 @@ def test_configuration_label(get_configuration, configure_environment, restart_l
     if wazuh_component == 'wazuh-manager':
         real_configuration = dict((key, cfg[key]) for key in ['location'])
         real_configuration['label'] = {'key': cfg['key'], 'item': cfg['label']}
+        api.wait_until_api_ready()
         api.compare_config_api_response([real_configuration], 'localfile')
 
 
