@@ -160,16 +160,16 @@ def check_log_format_invalid(cfg):
     if cfg['valid_value']:
         pytest.skip('Valid values provided')
 
-    log_callback = gc.callback_invalid_value('log_format', cfg['log_format'], prefix=prefix)
+    log_callback = gc.callback_invalid_value('log_format', cfg['log_format'], prefix)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
-    log_callback = gc.callback_error_in_configuration('ERROR', LOG_COLLECTOR_DETECTOR_PREFIX, prefix=prefix,
+    log_callback = gc.callback_error_in_configuration('ERROR', prefix,
                                                       conf_path=f'{wazuh_configuration}')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
-    log_callback = gc.callback_error_in_configuration('CRITICAL', LOG_COLLECTOR_DETECTOR_PREFIX,  prefix=prefix,
+    log_callback = gc.callback_error_in_configuration('CRITICAL', prefix,
                                                       conf_path=f'{wazuh_configuration}')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
