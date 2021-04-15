@@ -175,10 +175,11 @@ def get_manager_configuration(section=None, field=None):
 
 
 def wait_until_api_ready(protocol=API_PROTOCOL, host=API_HOST, port=API_PORT, user=API_USER, password=API_PASS,
-                         login_endpoint=API_LOGIN_ENDPOINT, timeout=10):
+                         login_endpoint=API_LOGIN_ENDPOINT, timeout=10, attempts=5):
     api_ready = False
-    while timeout > 0 and not api_ready:
+    while attempts > 0 and not api_ready:
         try:
+            attempts -= 1
             get_token_login_api(protocol, host, port, user, password, login_endpoint, timeout)
         except requests.exceptions.ConnectionError:
             time.sleep(1)
