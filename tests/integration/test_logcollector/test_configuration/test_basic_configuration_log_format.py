@@ -169,10 +169,11 @@ def check_log_format_invalid(cfg):
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
-    log_callback = gc.callback_error_in_configuration('CRITICAL', prefix,
-                                                      conf_path=f'{wazuh_configuration}')
-    wazuh_log_monitor.start(timeout=5, callback=log_callback,
-                            error_message="The expected error output has not been produced")
+    if sys.platform != 'win32':
+        log_callback = gc.callback_error_in_configuration('CRITICAL', prefix,
+                                                          conf_path=f'{wazuh_configuration}')
+        wazuh_log_monitor.start(timeout=5, callback=log_callback,
+                                error_message="The expected error output has not been produced")
 
 
 def test_log_format(get_configuration, configure_environment, restart_logcollector):
