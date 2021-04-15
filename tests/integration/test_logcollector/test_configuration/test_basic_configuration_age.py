@@ -65,12 +65,13 @@ configuration_ids = [f"{x['LOCATION'], x['LOG_FORMAT'], x['AGE']}" for x in para
 
 
 def check_configuration_age_valid(cfg):
-    log_callback = logcollector.callback_analyzing_file(cfg['location'])
+    log_callback = logcollector.callback_analyzing_file(cfg['location'], prefix=prefix)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
     if get_service() == 'wazuh-manager':
         real_configuration = cfg.copy()
         real_configuration.pop('valid_value')
+        api.wait_until_api_ready()
         api.compare_config_api_response([real_configuration], 'localfile')
 
 
@@ -78,16 +79,16 @@ def check_configuration_age_invalid(cfg):
     if cfg['age'] in problematic_values:
         pytest.xfail("Logcolector accepts invalid values. Issue: https://github.com/wazuh/wazuh/issues/8158")
 
-    log_callback = gc.callback_invalid_conf_for_localfile('age', prefix=prefix, severity='ERROR')
+    log_callback = gc.callback_invalid_conf_for_localfile('age', prefix, severity='ERROR')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
-    log_callback = gc.callback_error_in_configuration('ERROR', prefix=prefix,
+    log_callback = gc.callback_error_in_configuration('ERROR', prefix,
                                                       conf_path=f'{wazuh_configuration}')
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
     if sys.platform != 'win32':
-        log_callback = gc.callback_error_in_configuration('CRITICAL', prefix=prefix,
+        log_callback = gc.callback_error_in_configuration('CRITICAL', prefix,
                                                           conf_path=f'{wazuh_configuration}')
         wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                 error_message="The expected error output has not been produced")

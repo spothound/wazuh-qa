@@ -24,8 +24,6 @@ local_internal_options = {
     'logcollector.remote_commands': 1
 }
 
-from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX, AGENT_DETECTOR_PREFIX, FileMonitor
-
 if get_service() == 'wazuh-manager':
     prefix = LOG_COLLECTOR_DETECTOR_PREFIX
 else:
@@ -34,11 +32,8 @@ else:
 
 if sys.platform == 'win32':
     command = 'tasklist'
-    prefix = AGENT_DETECTOR_PREFIX
-
 else:
     command = 'ps -aux'
-    prefix = LOG_COLLECTOR_DETECTOR_PREFIX
 
 
 parameters = [
