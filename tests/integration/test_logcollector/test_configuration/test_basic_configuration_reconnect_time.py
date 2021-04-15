@@ -71,7 +71,7 @@ configuration_ids = [f"{x['LOG_FORMAT'], x['LOCATION'], x['RECONNECT_TIME']}" fo
 problematic_values = ['44sTesting', '9hTesting', '400mTesting', '3992']
 
 
-def test_configuration_reconnect_time_valid(cfg):
+def check_configuration_reconnect_time_valid(cfg):
     """
     """
     if wazuh_component == 'wazuh-manager':
