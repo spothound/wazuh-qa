@@ -102,7 +102,7 @@ def get_configuration(request):
 def test_configuration_reconnect_time(get_configuration, configure_environment, restart_logcollector):
     cfg = get_configuration['metadata']
     if cfg['valid_value']:
-        test_configuration_reconnect_time_valid(cfg)
+        check_configuration_reconnect_time_valid(cfg)
     else:
         check_configuration_reconnect_time_invalid(cfg)
 
