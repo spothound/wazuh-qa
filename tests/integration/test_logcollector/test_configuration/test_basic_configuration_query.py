@@ -7,15 +7,12 @@ import pytest
 import wazuh_testing.api as api
 import wazuh_testing.logcollector as logcollector
 from wazuh_testing.tools import get_service
+from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX, AGENT_DETECTOR_PREFIX
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 import sys
-from wazuh_testing.tools import get_service
-
 
 # Marks
 pytestmark = pytest.mark.tier(level=0)
-
-
 
 # Configuration
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
