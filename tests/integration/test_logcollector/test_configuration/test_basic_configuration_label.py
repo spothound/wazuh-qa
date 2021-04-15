@@ -25,7 +25,9 @@ else:
     location = '/tmp/testing.txt'
 
 
-if get_service() == 'wazuh-manager':
+wazuh_component = get_service()
+
+if wazuh_component:
     prefix = LOG_COLLECTOR_DETECTOR_PREFIX
 else:
     prefix = AGENT_DETECTOR_PREFIX
@@ -74,7 +76,7 @@ def test_configuration_label(get_configuration, configure_environment, restart_l
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
-    if get_service() == 'wazuh-manager':
+    if wazuh_component == 'wazuh-manager':
         real_configuration = dict((key, cfg[key]) for key in ['location'])
         real_configuration['label'] = {'key': cfg['key'], 'item': cfg['label']}
         api.compare_config_api_response([real_configuration], 'localfile')

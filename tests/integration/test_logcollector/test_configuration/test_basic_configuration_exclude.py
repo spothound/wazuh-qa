@@ -7,6 +7,7 @@ import sys
 import pytest
 import wazuh_testing.api as api
 from wazuh_testing.tools import get_service
+from wazuh_testing.tools.services import get_service
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX, AGENT_DETECTOR_PREFIX
 
@@ -18,7 +19,9 @@ pytestmark = pytest.mark.tier(level=0)
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
 
-if get_service() == 'wazuh-manager':
+wazuh_component = get_service()
+
+if wazuh_component:
     prefix = LOG_COLLECTOR_DETECTOR_PREFIX
 else:
     prefix = AGENT_DETECTOR_PREFIX
@@ -76,6 +79,6 @@ def test_configuration_exclude(get_configuration, configure_environment, restart
     """
     cfg = get_configuration['metadata']
 
-    if get_service() == 'wazuh-manager':
+    if wazuh_component == 'wazuh-manager':
         api.compare_config_api_response([cfg], 'localfile')
 

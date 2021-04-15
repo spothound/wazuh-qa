@@ -28,7 +28,9 @@ else:
     wazuh_configuration = 'etc/ossec.conf'
 
 
-if get_service() == 'wazuh-manager':
+wazuh_component = get_service()
+
+if wazuh_component:
     prefix = LOG_COLLECTOR_DETECTOR_PREFIX
 else:
     prefix = AGENT_DETECTOR_PREFIX
@@ -71,7 +73,7 @@ configuration_ids = [f"{x['LOG_FORMAT'], x['LOCATION'], x['RECONNECT_TIME']}" fo
 def test_configuration_reconnect_time_valid(cfg):
     """
     """
-    if get_service() == 'wazuh-manager':
+    if wazuh_component == 'wazuh-manager':
         real_configuration = cfg.copy()
         real_configuration.pop('valid_value')
         api.compare_config_api_response([real_configuration], 'localfile')

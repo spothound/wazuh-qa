@@ -23,7 +23,9 @@ test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
 
 
-if get_service() == 'wazuh-manager':
+wazuh_component = get_service()
+
+if wazuh_component:
     prefix = LOG_COLLECTOR_DETECTOR_PREFIX
 else:
     prefix = AGENT_DETECTOR_PREFIX
@@ -113,7 +115,7 @@ def check_configuration_out_format_valid(cfg):
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                 error_message="The expected error output has not been produced")
 
-    if get_service() == 'wazuh-manager':
+    if wazuh_component == 'wazuh-manager':
         real_configuration = dict((key, cfg[key]) for key in ('location', 'target', 'log_format'))
         real_configuration['out_format'] = {'target': cfg['target_out_format'], 'item': cfg['out_format']}
         api.compare_config_api_response([real_configuration], 'localfile')

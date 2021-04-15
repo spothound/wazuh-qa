@@ -24,7 +24,9 @@ local_internal_options = {
     'logcollector.remote_commands': 1
 }
 
-if get_service() == 'wazuh-manager':
+wazuh_component = get_service()
+
+if wazuh_component:
     prefix = LOG_COLLECTOR_DETECTOR_PREFIX
 else:
     prefix = AGENT_DETECTOR_PREFIX
@@ -76,5 +78,5 @@ def test_configuration_alias(get_local_internal_options, configure_local_interna
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
 
-    if get_service() == 'wazuh-manager':
+    if wazuh_component == 'wazuh-manager':
         api.compare_config_api_response([cfg], 'localfile')

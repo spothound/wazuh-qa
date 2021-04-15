@@ -35,7 +35,9 @@ else:
     wazuh_configuration = 'etc/ossec.conf'
 
 
-if get_service() == 'wazuh-manager':
+wazuh_component = get_service()
+
+if wazuh_component:
     prefix = LOG_COLLECTOR_DETECTOR_PREFIX
 else:
     prefix = AGENT_DETECTOR_PREFIX
@@ -144,7 +146,7 @@ def check_log_format_valid(cfg):
         wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                 error_message="The expected error output has not been produced")
 
-    if get_service() == 'wazuh-manager':
+    if wazuh_component == 'wazuh-manager':
         real_configuration = cfg.copy()
         real_configuration.pop('valid_value')
         api.compare_config_api_response([real_configuration], 'localfile')
