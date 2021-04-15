@@ -68,6 +68,7 @@ configurations = load_wazuh_configurations(configurations_path, __name__,
                                            params=parameters,
                                            metadata=metadata)
 configuration_ids = [f"{x['LOG_FORMAT'], x['LOCATION'], x['RECONNECT_TIME']}" for x in parameters]
+problematic_values = ['44sTesting', '9hTesting', '400mTesting', '3992']
 
 
 def test_configuration_reconnect_time_valid(cfg):
@@ -80,11 +81,12 @@ def test_configuration_reconnect_time_valid(cfg):
         api.compare_config_api_response([real_configuration], 'localfile')
 
 
-@pytest.mark.skipif(sys.platform == 'win32',
-                    reason="Windows system currently does not support this test required")
-def check_configuration_reconnect_time_invalid():
+def check_configuration_reconnect_time_invalid(cfg):
     """
     """
+    if cfg['reconnect_time'] in problematic_values:
+        pytest.xfail("Logcolector accepts invalid values. Issue: https://github.com/wazuh/wazuh/issues/8158")
+
     log_callback = logcollector.callback_invalid_reconnection_time(prefix=prefix)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message="The expected error output has not been produced")
@@ -102,5 +104,5 @@ def test_configuration_reconnect_time(get_configuration, configure_environment, 
     if cfg['valid_value']:
         test_configuration_reconnect_time_valid(cfg)
     else:
-        check_configuration_reconnect_time_invalid()
+        check_configuration_reconnect_time_invalid(cfg)
 
