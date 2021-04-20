@@ -117,6 +117,7 @@ class Agent:
                  rootcheck_frequency=60.0, rcv_msg_limit=0, keepalive_frequency=10, sca_frequency=60,
                  syscollector_frequency=60.0, syscollector_batch_size=10, hostinfo_eps=100, winevt_eps=100,
                  registration_address=None):
+        print(f"Constructor registration_address = {registration_address}")
         self.id = id
         self.name = name
         self.key = key
@@ -141,7 +142,9 @@ class Agent:
         self.keepalive_frequency = keepalive_frequency
         self.syscollector_frequency = syscollector_frequency
         self.manager_address = manager_address
+        print(f"Before = {registration_address}")
         self.registration_address = manager_address if registration_address is None else registration_address
+        print(f"After = {self.registration_address}")
         self.encryption_key = ""
         self.keep_alive_event = ""
         self.keep_alive_raw_msg = ""
@@ -237,6 +240,8 @@ class Agent:
         context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
+        print(f"Connection with {self.manager_address}")
+        print(f"Registration on {self.registration_address}")
 
         ssl_socket = context.wrap_socket(sock, server_hostname=self.registration_address)
         ssl_socket.connect((self.registration_address, 1515))

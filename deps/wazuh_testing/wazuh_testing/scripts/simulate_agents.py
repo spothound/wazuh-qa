@@ -35,6 +35,7 @@ def run_agents(agents_number=1, manager_address='localhost', protocol=TCP, agent
     active_agents, injectors = [], []
 
     for _ in range(agents_number):
+        print(f"Script sending registration address = {registration_address}")
         agent = ag.Agent(manager_address, "aes", os=agent_os, version=agent_version, fim_eps=eps,
                          registration_address=registration_address)
         available_modules = agent.modules.keys()
@@ -136,7 +137,7 @@ def main():
     n_processes = args.n_agents // args.agent_batch + (1 if remainder != 0 else 0)
 
     processes = []
-
+    print(f"ARGUMENT = {args.manager_registration_address}")
     for i in range(n_processes):
         agents = args.agent_batch
         if remainder != 0 and i == 0:
@@ -144,10 +145,8 @@ def main():
 
         arguments = (
             agents, args.manager_addr, args.agent_protocol, args.version, args.os, args.eps, args.duration,
-            args.modules, args.modules_eps, args.manager_registration_address
+            args.modules, args.modules_eps, None, args.manager_registration_address
         )
-
-        print(args.modules_eps)
 
         processes.append(Process(target=run_agents, args=arguments))
 
