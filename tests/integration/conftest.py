@@ -428,6 +428,31 @@ def configure_local_internal_options(get_local_internal_options):
 
 
 @pytest.fixture(scope='module')
+def create_file_structure(get_local_internal_options):
+    def create_folder(file_structure):
+        if isinstance(file_structure.value(), list):
+
+            for file in file_structure:
+                os.mkdir(file)
+                os.chdir(path)
+                create_folder(file)
+        elif isinstance(file_structure, dict):
+
+
+"""
+
+FILES = [
+    
+    {type: folder, name:tmp, files:}
+
+
+
+]
+
+"""
+
+
+@pytest.fixture(scope='module')
 def configure_environment(get_configuration, request):
     """Configure a custom environment for testing. Restart Wazuh is needed for applying the configuration."""
 
