@@ -11,7 +11,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 def run_agents(agents_number=1, manager_address='localhost', protocol=TCP, agent_version='v4.0.0',
-               agent_os='debian8', eps=1000, run_duration=20, active_modules=[], modules_eps=None):
+               agent_os='debian8', eps=1000, run_duration=20, active_modules=[], modules_eps=None,
+               registration_address=None):
     """Run a batch of agents connected to a manager with the same parameters.
 
     Args:
@@ -24,6 +25,7 @@ def run_agents(agents_number=1, manager_address='localhost', protocol=TCP, agent
         run_duration (int): Agent life time.
         active_modules (list): list with active modules names.
         modules_eps (list): list with eps for each active modules.
+        registration_address (str): Manager IP address where the agent will be registered.
     """
 
     logger = logging.getLogger(f"P{os.getpid()}")
@@ -32,7 +34,8 @@ def run_agents(agents_number=1, manager_address='localhost', protocol=TCP, agent
     active_agents, injectors = [], []
 
     for _ in range(agents_number):
-        agent = ag.Agent(manager_address, "aes", os=agent_os, version=agent_version, fim_eps=eps)
+        agent = ag.Agent(manager_address, "aes", os=agent_os, version=agent_version, fim_eps=eps,
+                         registration_address=registration_address)
         available_modules = agent.modules.keys()
 
         for module in active_modules:
@@ -99,6 +102,10 @@ def main():
     arg_parser.add_argument('-p', '--protocol', metavar='<protocol>', dest='agent_protocol',
                             type=str, required=False, default=TCP, help='Communication protocol')
 
+    arg_parser.add_argument('-r', '--registration-address', metavar='<manager_registration_ip_address>', type=str,
+                            required=False, default=None, help='Manager IP address where the agent will be registered',
+                            dest='manager_registration_address')
+
     arg_parser.add_argument('-t', '--time', metavar='<monitoring_time>', dest='duration',
                             type=int, required=False, default=20, help='Time in seconds for monitoring')
 
@@ -138,7 +145,7 @@ def main():
 
         arguments = (
             agents, args.manager_addr, args.agent_protocol, args.version, args.os, args.eps, args.duration,
-            args.modules, args.modules_eps
+            args.modules, args.modules_eps, args.manager_registration_address
         )
 
         processes.append(Process(target=run_agents, args=arguments))
