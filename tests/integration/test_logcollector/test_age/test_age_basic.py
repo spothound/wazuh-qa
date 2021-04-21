@@ -118,7 +118,7 @@ def test_configuration_age(get_files_list, create_file_structure, get_configurat
                                                                   prefix=prefix)
         wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                 error_message='No testing file detected')
-        if int(age_seconds) < int(file['age']):
+        if int(age_seconds) <= int(file['age']):
             log_callback = logcollector.callback_ignoring_file(
                 f"{file['folder_path']}{file['filename']}", prefix=prefix)
             wazuh_log_monitor.start(timeout=5, callback=log_callback,
@@ -132,4 +132,4 @@ def test_configuration_age(get_files_list, create_file_structure, get_configurat
                                         error_message='Testing file was not ignored')
             except TimeoutError:
                 not_ignored_file = True
-            assert not_ignored_file
+            assert not_ignored_file, f"{file['filename']} have been ignored with smaller modified time than age value"
