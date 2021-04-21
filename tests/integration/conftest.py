@@ -10,6 +10,7 @@ import subprocess
 import sys
 import uuid
 from datetime import datetime
+import time
 
 import pytest
 from numpydoc.docscrape import FunctionDoc
@@ -22,10 +23,11 @@ from wazuh_testing.tools.configuration import get_wazuh_conf, set_section_wazuh_
 from wazuh_testing.tools.file import truncate_file
 from wazuh_testing.tools.monitoring import QueueMonitor, FileMonitor, SocketController, close_sockets
 from wazuh_testing.tools.services import control_service, check_daemon_status, delete_dbs
-from wazuh_testing.tools.time import TimeMachine
+from wazuh_testing.tools.time import TimeMachine, time_to_seconds
 
 if sys.platform == 'win32':
     from wazuh_testing.fim import KEY_WOW64_64KEY, KEY_WOW64_32KEY, delete_registry, registry_parser, create_registry
+    import pywin32
 
 PLATFORMS = set("darwin linux win32 sunos5".split())
 HOST_TYPES = set("server agent".split())
@@ -438,9 +440,10 @@ def create_file_structure(get_files_list):
         f = open(f"{file['folder_path']}{file['filename']}", "a")
         f.close()
 
-        fileinfo = os.stat(f"{file['folder_path']}{file['filename']}")
-        os.utime(f"{file['folder_path']}{file['filename']}", (fileinfo.st_atime - file['age'],
-                                                              fileinfo.st_mtime - file['age']))
+        if 'age' in file:
+            fileinfo = os.stat(f"{file['folder_path']}{file['filename']}")
+            os.utime(f"{file['folder_path']}{file['filename']}", (fileinfo.st_atime - file['age'],
+                                                                  fileinfo.st_mtime - file['age']))
 
     yield
 
@@ -452,6 +455,31 @@ def create_file_structure(get_files_list):
 
 
 @pytest.fixture(scope='module')
+def change_host_date(datetime_modification):
+    if sys.os == 'win32':
+        """
+            import datetime
+            datetime.datetime.now()
+        tt = time.gmttime()
+        win32api.SetSystemTime(year, month, 0, day, 
+            tt.tm_hour, tt.tt_min, tt.tt_sec, 0)
+        """
+    else:
+        actual_time = time.clock_gettime(time.CLOCK_REALTIME)
+        start = time.time()
+        if datetime_modification[0] == '-':
+            time.clock_settime(time.CLOCK_REALTIME, actual_time - time_to_seconds(datetime_modification))
+        else:
+            time.clock_settime(time.CLOCK_REALTIME, actual_time + time_to_seconds(datetime_modification))
+    yield
+
+    if sys.os == 'win32':
+        print("Not supported yet")
+    else:
+        end = time.time()
+        time.clock_settime(time.CLOCK_REALTIME, actual_time + (end-start))
+
+    @pytest.fixture(scope='module')
 def configure_environment(get_configuration, request):
     """Configure a custom environment for testing. Restart Wazuh is needed for applying the configuration."""
 
