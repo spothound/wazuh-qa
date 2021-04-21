@@ -96,21 +96,8 @@ def callback_invalid_value(option, value):
     return monitoring.make_callback(pattern=msg, prefix=monitoring.REMOTED_DETECTOR_PREFIX)
 
 
-def callback_error_in_configuration(severity):
-    """Create a callback to detect configuration error in ossec.conf file.
-
-    Args:
-        severity (str): ERROR or CRITICAL.
-
-    Returns:
-        callable: callback to detect this event.
-    """
-    msg = fr"{severity}: \(\d+\): Configuration error at '{tools.WAZUH_CONF_RELATIVE}'."
-    return monitoring.make_callback(pattern=msg, prefix=monitoring.REMOTED_DETECTOR_PREFIX)
-
-
 def callback_error_invalid_port(port):
-    """Create a callback to detect invalid port.
+    """Create a callback to detect invalid port.callback_detect_remoted_started
 
     Args:
         port (str): Wazuh manager port.
