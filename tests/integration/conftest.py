@@ -428,15 +428,21 @@ def configure_local_internal_options(get_local_internal_options):
 
 
 @pytest.fixture(scope='module')
-def create_file_structure(get_local_internal_options):
-    for file in get_local_internal_options:
-        os.makedirs(file['folder_path'])
-        f = open(file['filename'], "a")
+def create_file_structure(get_files_list):
+    for file in get_files_list:
+        try:
+            os.makedirs(file['folder_path'])
+        except FileExistsError:
+            pass
+
+        f = open(f"{file['folder_path']}{file['filename']}", "a")
+        f.write("Testing file")
         f.close()
-        os.utime(file['filename'], (file['age'], file['age']))
+
+        os.utime(f"{file['folder_path']}{file['filename']}", (file['age'], file['age']))
     yield
 
-    for file in get_local_internal_options:
+    for file in get_files_list:
         try:
             shutil.rmtree(file['folder_path'])
         except OSError:

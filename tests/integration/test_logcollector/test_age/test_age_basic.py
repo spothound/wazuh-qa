@@ -4,10 +4,10 @@
 import os
 import pytest
 import sys
-from wazuh_testing.tools import get_service
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX, AGENT_DETECTOR_PREFIX
-from datetime import datetime, timedelta
+import wazuh_testing.logcollector as logcollector
+from datetime import datetime
 
 # Marks
 pytestmark = pytest.mark.tier(level=0)
@@ -15,7 +15,6 @@ pytestmark = pytest.mark.tier(level=0)
 # Configuration
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 configurations_path = os.path.join(test_data_path, 'wazuh_age.yaml')
-wazuh_component = get_service()
 
 WINDOWS_FOLDER_PATH = r'C:\testing' + '\\'
 LINUX_FOLDER_PATH = '/tmp/testing/'
@@ -76,6 +75,19 @@ configurations = load_wazuh_configurations(configurations_path, __name__,
 configuration_ids = [f"{x['LOCATION'], x['LOG_FORMAT'], x['AGE']}" for x in parameters]
 
 
+def age_to_seconds(age):
+    age_suffix = age[-1]
+    if age_suffix == 's':
+        factor_rate = 1
+    elif age_suffix == 'm':
+        factor_rate = 60
+    elif age_suffix == 'h':
+        factor_rate = 3600
+    elif age_suffix == 'd':
+        factor_rate = 86400
+    return age*factor_rate
+
+
 @pytest.fixture(scope="module", params=configurations, ids=configuration_ids)
 def get_configuration(request):
     """Get configurations from the module."""
@@ -91,7 +103,14 @@ def get_files_list():
 def test_configuration_age(get_files_list, create_file_structure, get_configuration,
                            configure_environment, restart_logcollector):
 
+    cfg = get_configuration['metadata']
+    age_seconds = age_to_seconds(cfg['age'])
 
-    assert 1 == 1
-
-
+    for file in file_structure:
+        log_callback = logcollector.callback_file_matches_pattern(cfg['location'], file['filename'], prefix=prefix)
+        wazuh_log_monitor.start(timeout=5, callback=log_callback,
+                                error_message='No testing file detected')
+        if age_seconds < file['age']:
+            log_callback = logcollector.callback_ignoring_file(file['filename'], prefix=prefix)
+            wazuh_log_monitor.start(timeout=5, callback=log_callback,
+                                    error_message='Testing file was not ignored')
