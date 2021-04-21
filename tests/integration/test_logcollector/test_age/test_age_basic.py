@@ -4,11 +4,10 @@
 import os
 import pytest
 import sys
-import wazuh_testing.api as api
 from wazuh_testing.tools import get_service
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX, AGENT_DETECTOR_PREFIX
-import wazuh_testing.logcollector as logcollector
+from datetime import datetime, timedelta
 
 # Marks
 pytestmark = pytest.mark.tier(level=0)
@@ -18,40 +17,59 @@ test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data
 configurations_path = os.path.join(test_data_path, 'wazuh_age.yaml')
 wazuh_component = get_service()
 
+WINDOWS_FOLDER_PATH = r'C:\testing' + '\\'
+LINUX_FOLDER_PATH = '/tmp/testing/'
 
-file_structure = {
-    'Testing': [
-        {'Otherfolder': [
-            {'name': 'testing_file', 'age': 'age'},
-            {'name': 'testing_file', 'age': 'age'},
-            {'name': 'testing_file', 'age': 'age'},
-            {'name': 'testing_file', 'age': 'age'},
-        ]}
-    ]
-}
+now_date = datetime.now()
+
 
 if sys.platform == 'win32':
-    location = r'C:\testing\file.txt'
-    wazuh_configuration = 'ossec.conf'
+    folder_path = WINDOWS_FOLDER_PATH
     prefix = AGENT_DETECTOR_PREFIX
-
 else:
-    location = '/tmp/testing.txt'
-    wazuh_configuration = 'etc/ossec.conf'
+    folder_path = LINUX_FOLDER_PATH
     prefix = LOG_COLLECTOR_DETECTOR_PREFIX
 
-parameters = [
-    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'AGE': '3s'},
-    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'AGE': '4000s'},
-    {'LOCATION': f'{location}', 'LOG_FORMAT': 'syslog', 'AGE': '5m'},
-]
-metadata = [
-    {'location': f'{location}', 'log_format': 'syslog', 'age': '3s', 'valid_value': True},
-    {'location': f'{location}', 'log_format': 'syslog', 'age': '4000s', 'valid_value': True},
-    {'location': f'{location}', 'log_format': 'syslog', 'age': '5m', 'valid_value': True},
+
+file_structure = [
+    {
+        "folder_path": f"{folder_path}",
+        "filename": "testing_file_40s.log",
+        "age": 40
+    },
+    {
+        "folder_path": f"{folder_path}",
+        "filename": "testing_file_5m.log",
+        "age": 300
+    },
+    {
+        "folder_path": f"{folder_path}",
+        "filename": "testing_file_3h.log",
+        "age": 10800
+    },
+    {
+        "folder_path": f"{folder_path}",
+        "filename": "testing_file_5d.log",
+        "age": 432000
+    },
+    {
+        "folder_path": f"{folder_path}",
+        "filename": "testing_file_300d.log",
+        "age": 25920000
+    },
 ]
 
-problematic_values = ['44sTesting', '9hTesting', '400mTesting', '3992']
+parameters = [
+    {'LOCATION': f'{folder_path}*', 'LOG_FORMAT': 'syslog', 'AGE': '3s'},
+    {'LOCATION': f'{folder_path}*', 'LOG_FORMAT': 'syslog', 'AGE': '4000s'},
+    {'LOCATION': f'{folder_path}*', 'LOG_FORMAT': 'syslog', 'AGE': '5m'},
+]
+metadata = [
+    {'location': f'{folder_path}*', 'log_format': 'syslog', 'age': '3s'},
+    {'location': f'{folder_path}*', 'log_format': 'syslog', 'age': '4000s'},
+    {'location': f'{folder_path}*', 'log_format': 'syslog', 'age': '5m'},
+]
+
 configurations = load_wazuh_configurations(configurations_path, __name__,
                                            params=parameters,
                                            metadata=metadata)
@@ -69,12 +87,11 @@ def get_files_list():
     """Get configurations from the module."""
     return file_structure
 
-def test_configuration_age(get_files_list, create_file_structure, get_configuration, configure_environment, restart_logcollector):
-    # Create a fixture to create file structure
-    # File structure is provided by the test. File strucutre is the following: {File: name}
-    # Fixture remove created files:
-    # Check that it ignore the file:
-    # Edit the file >> Testing file monitoring with age
-    # Check it the file is monitored
+
+def test_configuration_age(get_files_list, create_file_structure, get_configuration,
+                           configure_environment, restart_logcollector):
+
 
     assert 1 == 1
+
+

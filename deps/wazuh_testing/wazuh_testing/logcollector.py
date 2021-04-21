@@ -61,3 +61,13 @@ def callback_eventchannel_analyzing(event_location):
 def callback_invalid_location_pattern(location, prefix=monitoring.LOG_COLLECTOR_DETECTOR_PREFIX):
     msg = fr"Glob error. Invalid pattern: '{location}' or no files found."
     return monitoring.make_callback(pattern=msg, prefix=prefix, escape=True)
+
+
+def callback_ignoring_file(location_file, prefix=monitoring.LOG_COLLECTOR_DETECTOR_PREFIX):
+    msg = fr"DEBUG: Ignoring file '{location_file}' due to modification time"
+    return monitoring.make_callback(pattern=msg, prefix=prefix, escape=True)
+
+
+def callback_file_matches_pattern(location_pattern, location_file, prefix=monitoring.LOG_COLLECTOR_DETECTOR_PREFIX):
+    msg = fr"New file that matches the '{location_pattern}' pattern: '{location_file}'."
+    return monitoring.make_callback(pattern=msg, prefix=prefix, escape=True)
