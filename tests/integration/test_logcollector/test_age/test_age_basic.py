@@ -4,9 +4,12 @@
 import os
 import pytest
 import sys
+import time
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX, AGENT_DETECTOR_PREFIX
 import wazuh_testing.logcollector as logcollector
+from wazuh_testing.tools import LOG_FILE_PATH
+from wazuh_testing.tools.monitoring import FileMonitor
 from datetime import datetime
 
 # Marks
@@ -21,14 +24,12 @@ LINUX_FOLDER_PATH = '/tmp/testing/'
 
 now_date = datetime.now()
 
-
 if sys.platform == 'win32':
     folder_path = WINDOWS_FOLDER_PATH
     prefix = AGENT_DETECTOR_PREFIX
 else:
     folder_path = LINUX_FOLDER_PATH
     prefix = LOG_COLLECTOR_DETECTOR_PREFIX
-
 
 file_structure = [
     {
@@ -59,14 +60,18 @@ file_structure = [
 ]
 
 parameters = [
-    {'LOCATION': f'{folder_path}*', 'LOG_FORMAT': 'syslog', 'AGE': '3s'},
     {'LOCATION': f'{folder_path}*', 'LOG_FORMAT': 'syslog', 'AGE': '4000s'},
     {'LOCATION': f'{folder_path}*', 'LOG_FORMAT': 'syslog', 'AGE': '5m'},
+    {'LOCATION': f'{folder_path}*', 'LOG_FORMAT': 'syslog', 'AGE': '500m'},
+    {'LOCATION': f'{folder_path}*', 'LOG_FORMAT': 'syslog', 'AGE': '9h'},
+    {'LOCATION': f'{folder_path}*', 'LOG_FORMAT': 'syslog', 'AGE': '200d'},
 ]
 metadata = [
-    {'location': f'{folder_path}*', 'log_format': 'syslog', 'age': '3s'},
     {'location': f'{folder_path}*', 'log_format': 'syslog', 'age': '4000s'},
     {'location': f'{folder_path}*', 'log_format': 'syslog', 'age': '5m'},
+    {'location': f'{folder_path}*', 'log_format': 'syslog', 'age': '500m'},
+    {'location': f'{folder_path}*', 'log_format': 'syslog', 'age': '9h'},
+    {'location': f'{folder_path}*', 'log_format': 'syslog', 'age': '200d'},
 ]
 
 configurations = load_wazuh_configurations(configurations_path, __name__,
@@ -76,7 +81,8 @@ configuration_ids = [f"{x['LOCATION'], x['LOG_FORMAT'], x['AGE']}" for x in para
 
 
 def age_to_seconds(age):
-    age_suffix = age[-1]
+    age_suffix = str(age[-1])
+    age_value = int(age[:-1])
     if age_suffix == 's':
         factor_rate = 1
     elif age_suffix == 'm':
@@ -85,7 +91,7 @@ def age_to_seconds(age):
         factor_rate = 3600
     elif age_suffix == 'd':
         factor_rate = 86400
-    return age*factor_rate
+    return age_value * factor_rate
 
 
 @pytest.fixture(scope="module", params=configurations, ids=configuration_ids)
@@ -102,15 +108,28 @@ def get_files_list():
 
 def test_configuration_age(get_files_list, create_file_structure, get_configuration,
                            configure_environment, restart_logcollector):
-
     cfg = get_configuration['metadata']
     age_seconds = age_to_seconds(cfg['age'])
-
     for file in file_structure:
-        log_callback = logcollector.callback_file_matches_pattern(cfg['location'], file['filename'], prefix=prefix)
+        wazuh_log_monitor = FileMonitor(LOG_FILE_PATH)
+
+        log_callback = logcollector.callback_file_matches_pattern(cfg['location'],
+                                                                  f"{file['folder_path']}{file['filename']}",
+                                                                  prefix=prefix)
         wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                 error_message='No testing file detected')
-        if age_seconds < file['age']:
-            log_callback = logcollector.callback_ignoring_file(file['filename'], prefix=prefix)
+        if int(age_seconds) < int(file['age']):
+            log_callback = logcollector.callback_ignoring_file(
+                f"{file['folder_path']}{file['filename']}", prefix=prefix)
             wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                     error_message='Testing file was not ignored')
+        else:
+            not_ignored_file = False
+            try:
+                log_callback = logcollector.callback_ignoring_file(
+                    f"{file['folder_path']}{file['filename']}", prefix=prefix)
+                wazuh_log_monitor.start(timeout=5, callback=log_callback,
+                                        error_message='Testing file was not ignored')
+            except TimeoutError:
+                not_ignored_file = True
+            assert not_ignored_file

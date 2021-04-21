@@ -436,10 +436,12 @@ def create_file_structure(get_files_list):
             pass
 
         f = open(f"{file['folder_path']}{file['filename']}", "a")
-        f.write("Testing file")
         f.close()
 
-        os.utime(f"{file['folder_path']}{file['filename']}", (file['age'], file['age']))
+        fileinfo = os.stat(f"{file['folder_path']}{file['filename']}")
+        os.utime(f"{file['folder_path']}{file['filename']}", (fileinfo.st_atime - file['age'],
+                                                              fileinfo.st_mtime - file['age']))
+
     yield
 
     for file in get_files_list:
