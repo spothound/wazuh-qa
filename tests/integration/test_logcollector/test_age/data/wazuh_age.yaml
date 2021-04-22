@@ -2,7 +2,7 @@
   - test_age
   apply_to_modules:
   - test_age_basic
-  - test_age_datetimed_changed
+  - test_age_datetime_changed
   sections:
   - section: localfile
     elements:
