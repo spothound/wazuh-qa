@@ -4,7 +4,7 @@
 import os
 import pytest
 import sys
-import time
+from wazuh_testing.tools.time import time_to_seconds
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX, AGENT_DETECTOR_PREFIX
 import wazuh_testing.logcollector as logcollector
@@ -77,20 +77,6 @@ configurations = load_wazuh_configurations(configurations_path, __name__,
 configuration_ids = [f"{x['LOCATION'], x['LOG_FORMAT'], x['AGE']}" for x in parameters]
 
 
-def age_to_seconds(age):
-    age_suffix = str(age[-1])
-    age_value = int(age[:-1])
-    if age_suffix == 's':
-        factor_rate = 1
-    elif age_suffix == 'm':
-        factor_rate = 60
-    elif age_suffix == 'h':
-        factor_rate = 3600
-    elif age_suffix == 'd':
-        factor_rate = 86400
-    return age_value * factor_rate
-
-
 @pytest.fixture(scope="module", params=configurations, ids=configuration_ids)
 def get_configuration(request):
     """Get configurations from the module."""
@@ -104,7 +90,7 @@ def get_files_list():
 
 
 def test_configuration_age(get_files_list, create_file_structure, get_configuration,
-                           configure_environment, restart_logcollector):
+                           configure_environment, change_host_date, restart_logcollector):
 
     """
     In unix system time.clock_settime(time.CLOCK_REALTIME,2342342)
@@ -118,8 +104,10 @@ def test_configuration_age(get_files_list, create_file_structure, get_configurat
     dayOfWeek = datetime.datetime(time_tuple).isocalendar()[2]
     pywin32.SetSystemTime( time_tuple[:2] + (dayOfWeek,) + time_tuple[2:])
     """
+
     cfg = get_configuration['metadata']
-    age_seconds = age_to_seconds(cfg['age'])
+    age_seconds = time_to_seconds(cfg['age'])
+
     for file in file_structure:
         wazuh_log_monitor = FileMonitor(LOG_FILE_PATH)
 

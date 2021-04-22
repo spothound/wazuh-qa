@@ -479,7 +479,7 @@ def change_host_date(datetime_modification):
         end = time.time()
         time.clock_settime(time.CLOCK_REALTIME, actual_time + (end-start))
 
-    @pytest.fixture(scope='module')
+@pytest.fixture(scope='module')
 def configure_environment(get_configuration, request):
     """Configure a custom environment for testing. Restart Wazuh is needed for applying the configuration."""
 
