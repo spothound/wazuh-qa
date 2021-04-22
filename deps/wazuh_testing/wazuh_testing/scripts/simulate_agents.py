@@ -8,6 +8,7 @@ import wazuh_testing.tools.agent_simulator as ag
 from wazuh_testing import TCP
 
 logging.basicConfig(level=logging.DEBUG)
+SLEEP_TIME = 20
 
 
 def run_agents(agents_number=1, manager_address='localhost', protocol=TCP, agent_version='v4.0.0',
@@ -28,13 +29,15 @@ def run_agents(agents_number=1, manager_address='localhost', protocol=TCP, agent
         fixed_message_size (int): size in bytes for the message.
         registration_address (str): Manager IP address where the agent will be registered.
     """
-
     logger = logging.getLogger(f"P{os.getpid()}")
     logger.info(f"Starting {agents_number} agents.")
 
     active_agents, injectors = [], []
 
-    for _ in range(agents_number):
+    for i in range(agents_number):
+        if i % 3 == 0:
+            sleep(SLEEP_TIME)
+
         agent = ag.Agent(manager_address, "aes", os=agent_os, version=agent_version, fim_eps=eps,
                          fixed_message_size=fixed_message_size, syscollector_frequency=0,
                          registration_address=registration_address)
@@ -64,9 +67,16 @@ def run_agents(agents_number=1, manager_address='localhost', protocol=TCP, agent
         sender = ag.Sender(manager_address, protocol=protocol)
         injectors.append(ag.Injector(sender, agent))
 
+    logger.info(f"Total agents {len(active_agents)}")
+    logger.info(f"Total injectors {len(injectors)}")
+
     try:
-        start(injectors)
-        sleep(run_duration)
+        third = agents_number // 3
+        start(injectors[:third])
+        sleep(SLEEP_TIME)
+        start(injectors[third:third*2])
+        sleep(SLEEP_TIME)
+        start(injectors[third*2:])
     finally:
         stop(injectors)
 
@@ -142,12 +152,13 @@ def main():
     n_processes = args.n_agents // args.agent_batch + (1 if remainder != 0 else 0)
 
     processes = []
+    print(f"n_processes = {processes}")
 
     for i in range(n_processes):
         agents = args.agent_batch
         if remainder != 0 and i == 0:
             agents = remainder
-
+        print(f"Agents batch = {agents}")
         arguments = (
             agents, args.manager_addr, args.agent_protocol, args.version, args.os, args.eps, args.duration,
             args.modules, args.modules_eps, args.fixed_message_size, args.manager_registration_address
