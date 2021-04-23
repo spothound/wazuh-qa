@@ -4,6 +4,7 @@
 import os
 import pytest
 import sys
+import time
 from wazuh_testing.tools.time import time_to_seconds
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX, AGENT_DETECTOR_PREFIX
@@ -34,24 +35,8 @@ else:
 file_structure = [
     {
         "folder_path": f"{folder_path}",
-        "filename": "testing_file_40s.log",
-    },
-    {
-        "folder_path": f"{folder_path}",
-        "filename": "testing_file_5m.log",
-    },
-    {
-        "folder_path": f"{folder_path}",
-        "filename": "testing_file_3h.log",
-    },
-    {
-        "folder_path": f"{folder_path}",
-        "filename": "testing_file_5d.log",
-    },
-    {
-        "folder_path": f"{folder_path}",
-        "filename": "testing_file_300d.log",
-    },
+        "filename": "testing_age_dating.log",
+    }
 ]
 
 parameters = [
@@ -89,6 +74,12 @@ def get_files_list():
     return file_structure
 
 
+@pytest.fixture(scope="module", params=new_host_datetime)
+def get_datetime_changes(request):
+    """Get configurations from the module."""
+    return request.param
+
+
 def test_configuration_age(get_files_list, create_file_structure, get_configuration,
                            configure_environment, change_host_date, restart_logcollector):
 
@@ -116,7 +107,12 @@ def test_configuration_age(get_files_list, create_file_structure, get_configurat
                                                                   prefix=prefix)
         wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                 error_message='No testing file detected')
-        if int(age_seconds) <= int(file['age']):
+
+        fileinfo = os.stat(f"{file['folder_path']}{file['filename']}")
+        current_time = time.clock_gettime(time.CLOCK_REALTIME)
+        mfile_time = current_time - fileinfo.st_mtime
+
+        if age_seconds <= int(mfile_time):
             log_callback = logcollector.callback_ignoring_file(
                 f"{file['folder_path']}{file['filename']}", prefix=prefix)
             wazuh_log_monitor.start(timeout=5, callback=log_callback,
