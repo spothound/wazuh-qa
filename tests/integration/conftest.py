@@ -444,6 +444,7 @@ def create_file_structure(get_files_list):
                                                                   fileinfo.st_mtime - file['age']))
 
     yield
+    TimeMachine.time_rollback()
 
     for file in get_files_list:
         shutil.rmtree(file['folder_path'], ignore_errors=True)
@@ -452,9 +453,9 @@ def create_file_structure(get_files_list):
 @pytest.fixture(scope='module')
 def change_host_date(get_datetime_changes):
     if sys.platform == 'win32':
-        tt = time.gmttime()
-        win32api.SetSystemTime(tt.year, tt.month, 0, tt.day, tt.tm_hour, tt.tt_min,
-                               time_to_seconds(get_datetime_changes), 0)
+        current_time = datetime.now()
+        win32api.SetSystemTime(current_time.year, current_time.month, 0, current_time.day,
+                               current_time.tm_hour, current_time.tt_min, time_to_seconds(get_datetime_changes), 0)
     else:
         actual_time = time.clock_gettime(time.CLOCK_REALTIME)
         start = time.time()
@@ -463,6 +464,7 @@ def change_host_date(get_datetime_changes):
         else:
             time.clock_settime(time.CLOCK_REALTIME, actual_time + time_to_seconds(get_datetime_changes))
     yield
+    TimeMachine.time_rollback()
 
     if sys.os == 'win32':
         print("Not supported yet")
