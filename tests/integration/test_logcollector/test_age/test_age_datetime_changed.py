@@ -20,8 +20,8 @@ pytestmark = pytest.mark.tier(level=0)
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 configurations_path = os.path.join(test_data_path, 'wazuh_age.yaml')
 
-WINDOWS_FOLDER_PATH = r'C:\testing' + '\\'
-LINUX_FOLDER_PATH = '/tmp/testing/'
+WINDOWS_FOLDER_PATH = r'C:\testing_age' + '\\'
+LINUX_FOLDER_PATH = '/tmp/testing_age/'
 
 now_date = datetime.now()
 
@@ -80,7 +80,7 @@ def get_datetime_changes(request):
     return request.param
 
 
-def test_configuration_age(get_files_list, create_file_structure, get_configuration,
+def test_configuration_age_datetime(get_files_list, create_file_structure, get_configuration,
                            configure_environment, change_host_date, restart_logcollector):
 
     """

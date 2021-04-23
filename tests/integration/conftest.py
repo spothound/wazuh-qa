@@ -27,7 +27,7 @@ from wazuh_testing.tools.time import TimeMachine, time_to_seconds
 
 if sys.platform == 'win32':
     from wazuh_testing.fim import KEY_WOW64_64KEY, KEY_WOW64_32KEY, delete_registry, registry_parser, create_registry
-    import pywin32
+    import win32api
 
 PLATFORMS = set("darwin linux win32 sunos5".split())
 HOST_TYPES = set("server agent".split())
@@ -431,14 +431,12 @@ def configure_local_internal_options(get_local_internal_options):
 
 @pytest.fixture(scope='module')
 def create_file_structure(get_files_list):
-    for file in get_files_list:
-        try:
-            os.makedirs(file['folder_path'])
-        except FileExistsError:
-            pass
+    """
 
-        f = open(f"{file['folder_path']}{file['filename']}", "a")
-        f.close()
+    """
+    for file in get_files_list:
+        os.makedirs(file['folder_path'], exist_ok=True, mode=0o777)
+        f = open(f"{file['folder_path']}{file['filename']}", "a").close()
 
         if 'age' in file:
             fileinfo = os.stat(f"{file['folder_path']}{file['filename']}")
@@ -448,29 +446,22 @@ def create_file_structure(get_files_list):
     yield
 
     for file in get_files_list:
-        try:
-            shutil.rmtree(file['folder_path'])
-        except OSError:
-            pass
+        shutil.rmtree(file['folder_path'], ignore_errors=True)
 
 
 @pytest.fixture(scope='module')
-def change_host_date(datetime_modification):
-    if sys.os == 'win32':
-        """
-            import datetime
-            datetime.datetime.now()
+def change_host_date(get_datetime_changes):
+    if sys.platform == 'win32':
         tt = time.gmttime()
-        win32api.SetSystemTime(year, month, 0, day, 
-            tt.tm_hour, tt.tt_min, tt.tt_sec, 0)
-        """
+        win32api.SetSystemTime(tt.year, tt.month, 0, tt.day, tt.tm_hour, tt.tt_min,
+                               time_to_seconds(get_datetime_changes), 0)
     else:
         actual_time = time.clock_gettime(time.CLOCK_REALTIME)
         start = time.time()
-        if datetime_modification[0] == '-':
-            time.clock_settime(time.CLOCK_REALTIME, actual_time - time_to_seconds(datetime_modification))
+        if get_datetime_changes[0] == '-':
+            time.clock_settime(time.CLOCK_REALTIME, actual_time - time_to_seconds(get_datetime_changes[1:]))
         else:
-            time.clock_settime(time.CLOCK_REALTIME, actual_time + time_to_seconds(datetime_modification))
+            time.clock_settime(time.CLOCK_REALTIME, actual_time + time_to_seconds(get_datetime_changes))
     yield
 
     if sys.os == 'win32':
