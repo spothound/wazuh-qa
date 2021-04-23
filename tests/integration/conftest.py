@@ -466,7 +466,7 @@ def change_host_date(get_datetime_changes):
     yield
     TimeMachine.time_rollback()
 
-    if sys.os == 'win32':
+    if sys.platform == 'win32':
         print("Not supported yet")
     else:
         end = time.time()
