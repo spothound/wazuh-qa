@@ -74,7 +74,7 @@ def get_files_list():
     return file_structure
 
 
-@pytest.fixture(scope="module", params=new_host_datetime)
+@pytest.fixture(scope="function", params=new_host_datetime)
 def get_datetime_changes(request):
     """Get configurations from the module."""
     return request.param

@@ -9,7 +9,7 @@ import shutil
 import subprocess
 import sys
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 
 import pytest
@@ -429,7 +429,7 @@ def configure_local_internal_options(get_local_internal_options):
         yield
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def create_file_structure(get_files_list):
     """
 
@@ -450,12 +450,17 @@ def create_file_structure(get_files_list):
         shutil.rmtree(file['folder_path'], ignore_errors=True)
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def change_host_date(get_datetime_changes):
     if sys.platform == 'win32':
-        current_time = datetime.now()
-        win32api.SetSystemTime(current_time.year, current_time.month, 0, current_time.day,
-                               current_time.tm_hour, current_time.tt_min, time_to_seconds(get_datetime_changes), 0)
+        if get_datetime_changes[0] == '-':
+            print(str(time_to_seconds(get_datetime_changes[1:])))
+            current_time = datetime.now() - timedelta(seconds=time_to_seconds(get_datetime_changes[1:]))
+        else:
+            current_time = datetime.now() - timedelta(seconds=time_to_seconds(get_datetime_changes[1:]))
+
+        win32api.SetSystemTime(int(current_time.year), int(current_time.month), int(current_time.weekday()),
+                               int(current_time.day), int(current_time.hour), int(current_time.minute), 1, 0)
     else:
         actual_time = time.clock_gettime(time.CLOCK_REALTIME)
         start = time.time()
@@ -471,6 +476,7 @@ def change_host_date(get_datetime_changes):
     else:
         end = time.time()
         time.clock_settime(time.CLOCK_REALTIME, actual_time + (end-start))
+
 
 @pytest.fixture(scope='module')
 def configure_environment(get_configuration, request):
