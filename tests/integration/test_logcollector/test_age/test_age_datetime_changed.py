@@ -83,18 +83,6 @@ def get_datetime_changes(request):
 def test_configuration_age_datetime(get_files_list, create_file_structure, get_configuration,
                            configure_environment, change_host_date, restart_logcollector):
 
-    """
-    In unix system time.clock_settime(time.CLOCK_REALTIME,2342342)
-
-
-    In windows systems
-
-    import pywin32
-    # http://timgolden.me.uk/pywin32-docs/win32api__SetSystemTime_meth.html
-    # pywin32.SetSystemTime(year, month , dayOfWeek , day , hour , minute , second , millseconds )
-    dayOfWeek = datetime.datetime(time_tuple).isocalendar()[2]
-    pywin32.SetSystemTime( time_tuple[:2] + (dayOfWeek,) + time_tuple[2:])
-    """
 
     cfg = get_configuration['metadata']
     age_seconds = time_to_seconds(cfg['age'])
@@ -127,3 +115,9 @@ def test_configuration_age_datetime(get_files_list, create_file_structure, get_c
             except TimeoutError:
                 not_ignored_file = True
             assert not_ignored_file, f"{file['filename']} have been ignored with smaller modified time than age value"
+
+
+"""
+2021/07/22 20:22:29 wazuh-logcollector[51212] read_syslog.c:100 at read_syslog(): DEBUG: Reading syslog message: 'fdsafasdf'
+2021/07/22 20:22:29 wazuh-logcollector[51212] read_syslog.c:140 at read_syslog(): DEBUG: Read 1 lines from /tmp/testing_age/file_manual.log
+"""

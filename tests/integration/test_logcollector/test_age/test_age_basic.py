@@ -87,7 +87,7 @@ def get_configuration(request):
     return request.param
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 def get_files_list():
     """Get configurations from the module."""
     return file_structure
