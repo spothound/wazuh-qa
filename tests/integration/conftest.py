@@ -452,17 +452,16 @@ def create_file_structure(get_files_list):
 
 @pytest.fixture(scope='function')
 def change_host_date(get_datetime_changes):
+    actual_time = time.clock_gettime(time.CLOCK_REALTIME)
     if sys.platform == 'win32':
         if get_datetime_changes[0] == '-':
-            print(str(time_to_seconds(get_datetime_changes[1:])))
             current_time = datetime.now() - timedelta(seconds=time_to_seconds(get_datetime_changes[1:]))
         else:
-            current_time = datetime.now() - timedelta(seconds=time_to_seconds(get_datetime_changes[1:]))
+            current_time = datetime.now() + timedelta(seconds=time_to_seconds(get_datetime_changes))
 
         win32api.SetSystemTime(int(current_time.year), int(current_time.month), int(current_time.weekday()),
                                int(current_time.day), int(current_time.hour), int(current_time.minute), 1, 0)
     else:
-        actual_time = time.clock_gettime(time.CLOCK_REALTIME)
         start = time.time()
         if get_datetime_changes[0] == '-':
             time.clock_settime(time.CLOCK_REALTIME, actual_time - time_to_seconds(get_datetime_changes[1:]))
@@ -474,6 +473,7 @@ def change_host_date(get_datetime_changes):
     if sys.platform == 'win32':
         print("Not supported yet")
     else:
+        #os.system("timedatectl set-ntp 1")
         end = time.time()
         time.clock_settime(time.CLOCK_REALTIME, actual_time + (end-start))
 
