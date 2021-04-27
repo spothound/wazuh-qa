@@ -429,7 +429,7 @@ def configure_local_internal_options(get_local_internal_options):
         yield
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def create_file_structure(get_files_list):
     """
 

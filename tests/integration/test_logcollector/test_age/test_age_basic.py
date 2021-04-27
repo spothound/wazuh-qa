@@ -92,7 +92,7 @@ def get_configuration(request):
     return request.param
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def get_files_list():
     """Get configurations from the module."""
     return file_structure
@@ -116,17 +116,17 @@ def test_configuration_age_basic(get_files_list, create_file_structure, get_conf
             wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                     error_message='Testing file was not ignored')
 
-            f = open(f"{file['folder_path']}{file['filename']}", "w")
+            f = open(f"{file['folder_path']}{file['filename']}", "a")
             f.write(file['content'])
             f.close()
 
-            log_callback = logcollector.callback_reading_syslog_message(file['content'], prefix=prefix)
-            wazuh_log_monitor.start(timeout=5, callback=log_callback,
+            log_callback = logcollector.callback_reading_syslog_message(file['content'][:-1], prefix=prefix)
+            wazuh_log_monitor.start(timeout=10, callback=log_callback,
                                     error_message='Testing file was not ignored')
 
             log_callback = logcollector.callback_read_line_from_file(1, f"{file['folder_path']}{file['filename']}",
                                                                         prefix=prefix)
-            wazuh_log_monitor.start(timeout=5, callback=log_callback,
+            wazuh_log_monitor.start(timeout=10, callback=log_callback,
                                     error_message='Testing file was not ignored')
 
         else:
