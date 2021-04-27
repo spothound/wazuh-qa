@@ -125,7 +125,3 @@ def test_configuration_age_datetime(get_files_list, create_file_structure, get_c
             assert not_ignored_file, f"{file['filename']} have been ignored with smaller modified time than age value"
 
 
-"""
-2021/07/22 20:22:29 wazuh-logcollector[51212] read_syslog.c:100 at read_syslog(): DEBUG: Reading syslog message: 'fdsafasdf'
-2021/07/22 20:22:29 wazuh-logcollector[51212] read_syslog.c:140 at read_syslog(): DEBUG: Read 1 lines from /tmp/testing_age/file_manual.log
-"""

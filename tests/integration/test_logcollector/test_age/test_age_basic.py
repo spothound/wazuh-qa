@@ -36,27 +36,32 @@ file_structure = [
     {
         "folder_path": f"{folder_path}",
         "filename": "testing_file_40s.log",
-        "age": 40
+        "age": 40,
+        'content': f'Content of testing_file_40s'
     },
     {
         "folder_path": f"{folder_path}",
         "filename": "testing_file_5m.log",
-        "age": 300
+        "age": 300,
+        'content': f'Content of testing_file_40s'
     },
     {
         "folder_path": f"{folder_path}",
         "filename": "testing_file_3h.log",
-        "age": 10800
+        "age": 10800,
+        'content': f'Content of testing_file_40s'
     },
     {
         "folder_path": f"{folder_path}",
         "filename": "testing_file_5d.log",
-        "age": 432000
+        "age": 432000,
+        'content': f'Content of testing_file_40s'
     },
     {
         "folder_path": f"{folder_path}",
         "filename": "testing_file_300d.log",
-        "age": 25920000
+        "age": 25920000,
+        'content': f'Content of testing_file_40s'
     },
 ]
 
@@ -110,6 +115,20 @@ def test_configuration_age_basic(get_files_list, create_file_structure, get_conf
                 f"{file['folder_path']}{file['filename']}", prefix=prefix)
             wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                     error_message='Testing file was not ignored')
+
+            f = open(f"{file['folder_path']}{file['filename']}", "w")
+            f.write(file['content'])
+            f.close()
+
+            log_callback = logcollector.callback_reading_syslog_message(file['content'], prefix=prefix)
+            wazuh_log_monitor.start(timeout=5, callback=log_callback,
+                                    error_message='Testing file was not ignored')
+
+            log_callback = logcollector.callback_read_line_from_file(1, f"{file['folder_path']}{file['filename']}",
+                                                                        prefix=prefix)
+            wazuh_log_monitor.start(timeout=5, callback=log_callback,
+                                    error_message='Testing file was not ignored')
+
         else:
             not_ignored_file = False
             try:
