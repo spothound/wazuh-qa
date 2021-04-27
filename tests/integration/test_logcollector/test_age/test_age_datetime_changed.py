@@ -9,10 +9,11 @@ from wazuh_testing.tools.time import time_to_seconds
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX, AGENT_DETECTOR_PREFIX
 import wazuh_testing.logcollector as logcollector
-from wazuh_testing.tools import LOG_FILE_PATH
-from wazuh_testing.tools.monitoring import FileMonitor
 from datetime import datetime
-
+from wazuh_testing.tools import LOG_FILE_PATH
+from wazuh_testing.tools.file import truncate_file
+from wazuh_testing.tools.monitoring import FileMonitor
+from wazuh_testing.tools.services import control_service
 # Marks
 pytestmark = pytest.mark.tier(level=0)
 
@@ -75,20 +76,27 @@ def get_files_list():
 
 
 @pytest.fixture(scope="function", params=new_host_datetime)
-def get_datetime_changes(request):
+def get_datetime_changes(request, restart_logcollector):
     """Get configurations from the module."""
     return request.param
 
 
 def test_configuration_age_datetime(get_files_list, create_file_structure, get_configuration,
-                           configure_environment, change_host_date, restart_logcollector):
+                           configure_environment, change_host_date):
 
+
+
+    DAEMON_NAME = "wazuh-logcollector"
+
+    control_service('stop', daemon=DAEMON_NAME)
+    truncate_file(LOG_FILE_PATH)
+    wazuh_log_monitor = FileMonitor(LOG_FILE_PATH)
+    control_service('start', daemon=DAEMON_NAME)
 
     cfg = get_configuration['metadata']
     age_seconds = time_to_seconds(cfg['age'])
 
     for file in file_structure:
-        wazuh_log_monitor = FileMonitor(LOG_FILE_PATH)
 
         log_callback = logcollector.callback_file_matches_pattern(cfg['location'],
                                                                   f"{file['folder_path']}{file['filename']}",
