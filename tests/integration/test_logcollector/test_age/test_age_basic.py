@@ -37,31 +37,31 @@ file_structure = [
         "folder_path": f"{folder_path}",
         "filename": "testing_file_40s.log",
         "age": 40,
-        'content': f'Content of testing_file_40s'
+        'content': f'Content of testing_file_40s\n'
     },
     {
         "folder_path": f"{folder_path}",
         "filename": "testing_file_5m.log",
         "age": 300,
-        'content': f'Content of testing_file_40s'
+        'content': f'Content of testing_file_40s\n'
     },
     {
         "folder_path": f"{folder_path}",
         "filename": "testing_file_3h.log",
         "age": 10800,
-        'content': f'Content of testing_file_40s'
+        'content': f'Content of testing_file_40s\n'
     },
     {
         "folder_path": f"{folder_path}",
         "filename": "testing_file_5d.log",
         "age": 432000,
-        'content': f'Content of testing_file_40s'
+        'content': f'Content of testing_file_40s\n'
     },
     {
         "folder_path": f"{folder_path}",
         "filename": "testing_file_300d.log",
         "age": 25920000,
-        'content': f'Content of testing_file_40s'
+        'content': f'Content of testing_file_40s\n'
     },
 ]
 
