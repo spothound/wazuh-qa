@@ -16,6 +16,7 @@ from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX, AGENT_
 pytestmark = pytest.mark.tier(level=0)
 
 # Configuration
+no_restart_windows_after_configuration_set = True
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
 wazuh_component = get_service()
@@ -26,9 +27,7 @@ if sys.platform == 'win32':
 else:
     prefix = LOG_COLLECTOR_DETECTOR_PREFIX
 
-local_internal_options = {
-    'logcollector.remote_commands': 1
-}
+local_internal_options = {'logcollector.remote_commands': 1}
 
 parameters = [
     {'LOG_FORMAT': 'command', 'COMMAND': 'echo Testing'},
@@ -78,7 +77,7 @@ def test_configuration_command(get_local_internal_options, configure_local_inter
                                      configure_environment, restart_logcollector):
     """Check if the Wazuh run correctly with the specified command monitoring configuration.
 
-    Ensure command monitoring allow the specified attributes. Also, in the case of manager instance, check if the API
+    Ensure command monitoring allow the specified attributes. Also, in the case of the manager instance, check if the API
     answer for localfile block coincides.
 
     Raises:

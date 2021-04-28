@@ -17,12 +17,11 @@ import wazuh_testing.api as api
 pytestmark = pytest.mark.tier(level=0)
 
 # Configuration
+no_restart_windows_after_configuration_set = True
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
 
-local_internal_options = {
-    'logcollector.remote_commands': '1'
-}
+local_internal_options = {'logcollector.remote_commands': '1'}
 
 wazuh_component = get_service()
 
@@ -65,10 +64,8 @@ def get_local_internal_options():
 
 def test_configuration_alias(get_local_internal_options, configure_local_internal_options,
                              get_configuration, configure_environment, restart_logcollector):
-    """
-    Check if the module run correctly with the specified command monitoring configuration and that it uses alias value.
-
-    Ensure command monitoring uses specified alias value. Also, in the case of manager instance, check if the API
+    """Check if the module runs correctly with the specified command monitoring configuration and that it uses an alias value.
+    Ensure command monitoring uses specified alias value. Also, in the case of the manager instance, check if the API
     answer for localfile configuration block coincides.
 
     Raises:

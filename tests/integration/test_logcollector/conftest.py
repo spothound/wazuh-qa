@@ -15,14 +15,9 @@ DAEMON_NAME = "wazuh-logcollector"
 
 @pytest.fixture(scope='module')
 def restart_logcollector(get_configuration, request):
-    # Reset ossec.log and start a new monitor
+    # Reset log file and start a new monitor
     control_service('stop', daemon=DAEMON_NAME)
     truncate_file(LOG_FILE_PATH)
     file_monitor = FileMonitor(LOG_FILE_PATH)
     setattr(request.module, 'wazuh_log_monitor', file_monitor)
-    try:
-        control_service('start', daemon=DAEMON_NAME)
-    except sb.CalledProcessError:
-        pass
-    except ValueError:
-        pass
+    control_service('start', daemon=DAEMON_NAME)

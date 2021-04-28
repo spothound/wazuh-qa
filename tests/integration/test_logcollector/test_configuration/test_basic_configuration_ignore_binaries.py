@@ -8,18 +8,24 @@ import sys
 
 from wazuh_testing.tools.configuration import load_wazuh_configurations
 import wazuh_testing.generic_callbacks as gc
-from wazuh_testing.tools import get_service
+from wazuh_testing.tools import get_service, LOG_FILE_PATH
 import wazuh_testing.logcollector as logcollector
-from wazuh_testing.tools.services import get_process_cmd, check_if_process_is_running
-
+from wazuh_testing.tools.services import get_process_cmd, check_if_process_is_running, control_service
+from wazuh_testing.tools.file import truncate_file
 import wazuh_testing.api as api
-from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX, AGENT_DETECTOR_PREFIX
+from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX, AGENT_DETECTOR_PREFIX, FileMonitor
+
+import subprocess as sb
+
+LOGCOLLECTOR_DAEMON = "wazuh-logcollector"
 
 
 # Marks
 pytestmark = pytest.mark.tier(level=0)
 
 # Configuration
+no_restart_windows_after_configuration_set = True
+force_restart_after_restoring = True
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
 
@@ -72,18 +78,19 @@ def get_configuration(request):
 
 
 def check_ignore_binaries_valid(cfg):
-    """Check if the Wazuh run correctly with the specified ignore_binaries field value.
+    """Check if the Wazuh runs correctly with the specified ignore_binaries field value.
 
-    Ensure logcollector allow the specified ignore_binaries attribute. Also, in case of manager instance,
+    Ensure logcollector allows the specified ignore_binaries attribute. Also, in the case of the manager instance,
     check if the API answer for localfile block coincides.
 
     Args:
         cfg (dict): Dictionary with the localfile configuration.
 
     Raises:
-        TimeoutError: In case of Windows system, callback for invalid location pattern is not generated.
-        AssertError: In case of a server instance, the API response is different that the real configuration.
+        TimeoutError: In the case of Windows system, the callback for an invalid location pattern is not generated.
+        AssertError: In the case of a server instance, the API response is different than the real configuration.
     """
+    wazuh_log_monitor = FileMonitor(LOG_FILE_PATH)
 
     if sys.platform == 'win32':
         log_callback = logcollector.callback_invalid_location_pattern(cfg['location'], prefix=prefix)
@@ -111,6 +118,8 @@ def check_ignore_binaries_invalid(cfg):
     Raises:
         TimeoutError: If error callbacks are not generated.
     """
+    wazuh_log_monitor = FileMonitor(LOG_FILE_PATH)
+
     log_callback = gc.callback_invalid_value('ignore_binaries', cfg['ignore_binaries'], prefix)
     wazuh_log_monitor.start(timeout=5, callback=log_callback,
                             error_message=gc.GENERIC_CALLBACK_ERROR_MESSAGE)
@@ -127,7 +136,7 @@ def check_ignore_binaries_invalid(cfg):
                                 error_message=gc.GENERIC_CALLBACK_ERROR_MESSAGE)
 
 
-def test_ignore_binaries(get_configuration, configure_environment, restart_logcollector):
+def test_ignore_binaries(get_configuration, configure_environment):
     """Check if the Wazuh ignore_binaries field of logcollector works properly.
 
     Ensure Wazuh component fails in case of invalid values and works properly in case of valid ignore_binaries values.
@@ -136,7 +145,18 @@ def test_ignore_binaries(get_configuration, configure_environment, restart_logco
         TimeoutError: If expected callbacks are not generated.
     """
     cfg = get_configuration['metadata']
+    control_service('stop', daemon=LOGCOLLECTOR_DAEMON)
+    truncate_file(LOG_FILE_PATH)
+
     if cfg['valid_value']:
+        control_service('start', daemon=LOGCOLLECTOR_DAEMON)
         check_ignore_binaries_valid(cfg)
     else:
-        check_ignore_binaries_invalid(cfg)
+        if sys.platform == 'win32':
+            expected_exception = ValueError
+        else:
+            expected_exception = sb.CalledProcessError
+
+        with pytest.raises(expected_exception):
+            control_service('start', daemon=LOGCOLLECTOR_DAEMON)
+            check_ignore_binaries_invalid(cfg)

@@ -16,6 +16,7 @@ from wazuh_testing.tools.services import get_process_cmd, check_if_process_is_ru
 pytestmark = pytest.mark.tier(level=0)
 
 # Configuration
+no_restart_windows_after_configuration_set = True
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
 
@@ -45,7 +46,7 @@ if sys.platform == 'win32':
         {'LOCATION': r'C:\xampp\apache\logs\*.log', 'LOG_FORMAT': 'syslog'},
         {'LOCATION': r'C:\logs\file-%Y-%m-%d.log', 'LOG_FORMAT': 'syslog'},
         {'LOCATION': r'C:\Testing white spaces', 'LOG_FORMAT': 'syslog'},
-        {'LOCATION': r'C:\FOLDER' '\\', 'LOG_FORMAT': 'json'},
+        {'LOCATION': r'C:\FOLDER\*', 'LOG_FORMAT': 'json'},
     ]
 
     metadata = [
@@ -63,7 +64,7 @@ if sys.platform == 'win32':
         {'location': r'C:\xampp\apache\logs\*.log', 'log_format': 'syslog'},
         {'location': r'C:\logs\file-%Y-%m-%d.log', 'log_format': 'syslog'},
         {'location': r'C:\Testing white spaces', 'log_format': 'syslog'},
-        {'location': r'C:\FOLDER' '\\', 'log_format': 'json'},
+        {'location': r'C:\FOLDER\*', 'log_format': 'json'},
     ]
 
 else:
@@ -103,14 +104,14 @@ def get_configuration(request):
 
 
 def test_configuration_location(get_configuration, configure_environment, restart_logcollector):
-    """Check if the Wazuh run correctly with the specified location field value.
+    """Check if Wazuh runs correctly with the specified location field value.
 
-    Ensure logcollector allow the specified locations. Also, in case of manager instance, check if the API
+    Ensure logcollector allows the specified locations. Also, in the case of the manager instance, check if the API
     answer for localfile block coincides.
 
     Raises:
         TimeoutError: If the "Analyzing file" callback is not generated.
-        AssertError: In case of a server instance, the API response is different that the real configuration.
+        AssertError: In the case of a server instance, the API response is different that the real configuration.
     """
     cfg = get_configuration['metadata']
 
