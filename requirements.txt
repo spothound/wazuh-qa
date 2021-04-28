@@ -31,5 +31,5 @@ jq==1.1.2; platform_system == "Linux" or platform_system == "MacOS"
 cryptography==3.3.2; platform_system == "Linux" or platform_system == "MacOS" or platform_system=='Windows'
 urllib3~=1.25.11
 setuptools~=56.0.0
-numpy~=1.20.2
+numpy~=1.19.5
 py~=1.10.0
