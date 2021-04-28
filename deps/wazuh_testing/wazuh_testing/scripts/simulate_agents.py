@@ -64,7 +64,8 @@ def run_agents(agents_number=1, manager_address='localhost', protocol=TCP, agent
         sender = ag.Sender(manager_address, protocol=protocol)
         injectors.append(ag.Injector(sender, agent))
 
-    sleep(30)
+    # Waiting time to register all agents before connecting them
+    sleep(45)
 
     try:
         start(injectors)
@@ -157,8 +158,13 @@ def main():
 
         processes.append(Process(target=run_agents, args=arguments))
 
+    counter = 0
+
     for p in processes:
+        if(counter % 100 == 0):
+            sleep(3)
         p.start()
+        counter += 1
 
     for p in processes:
         p.join()
