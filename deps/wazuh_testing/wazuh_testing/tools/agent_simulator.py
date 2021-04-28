@@ -270,7 +270,7 @@ class Agent:
                     self._register_helper()
                 except (ssl.SSLEOFError, ConnectionResetError):
                     retries -= 1
-                    sleep(3)
+                    sleep(5)
                 else:
                     break
         else:
