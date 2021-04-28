@@ -21,7 +21,7 @@ pytestmark = pytest.mark.tier(level=0)
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 configurations_path = os.path.join(test_data_path, 'wazuh_age.yaml')
 
-WINDOWS_FOLDER_PATH = r'C:\testing_age' + '\\'
+WINDOWS_FOLDER_PATH = 'C:\\testing_age' + '\\'
 LINUX_FOLDER_PATH = '/tmp/testing_age/'
 
 now_date = datetime.now()
@@ -81,7 +81,7 @@ def get_datetime_changes(request, restart_logcollector):
     return request.param
 
 
-def test_configuration_age_datetime(get_files_list, create_file_structure, get_configuration,
+def test_configuration_age_datetime(disable_time_sync, get_files_list, create_file_structure, get_configuration,
                            configure_environment, change_host_date):
 
 
@@ -105,7 +105,7 @@ def test_configuration_age_datetime(get_files_list, create_file_structure, get_c
                                 error_message='No testing file detected')
 
         fileinfo = os.stat(f"{file['folder_path']}{file['filename']}")
-        current_time = time.clock_gettime(time.CLOCK_REALTIME)
+        current_time = time.time()
         mfile_time = current_time - fileinfo.st_mtime
 
         if age_seconds <= int(mfile_time):

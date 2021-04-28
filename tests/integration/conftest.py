@@ -436,7 +436,7 @@ def create_file_structure(get_files_list):
     """
     for file in get_files_list:
         os.makedirs(file['folder_path'], exist_ok=True, mode=0o777)
-        f = open(f"{file['folder_path']}{file['filename']}", "a").close()
+        f = open(f"{file['folder_path']}{file['filename']}", "w+").close()
 
         if 'age' in file:
             fileinfo = os.stat(f"{file['folder_path']}{file['filename']}")
@@ -447,12 +447,12 @@ def create_file_structure(get_files_list):
     TimeMachine.time_rollback()
 
     for file in get_files_list:
-        shutil.rmtree(file['folder_path'], ignore_errors=True)
+        shutil.rmtree(f"{file['folder_path']}{file['filename']}", ignore_errors=True)
 
 
 @pytest.fixture(scope='function')
 def change_host_date(get_datetime_changes):
-    actual_time = time.clock_gettime(time.CLOCK_REALTIME)
+    actual_time = time.time()
     if sys.platform == 'win32':
         if get_datetime_changes[0] == '-':
             current_time = datetime.now() - timedelta(seconds=time_to_seconds(get_datetime_changes[1:]))
@@ -462,20 +462,36 @@ def change_host_date(get_datetime_changes):
         win32api.SetSystemTime(int(current_time.year), int(current_time.month), int(current_time.weekday()),
                                int(current_time.day), int(current_time.hour), int(current_time.minute), 1, 0)
     else:
-        start = time.time()
         if get_datetime_changes[0] == '-':
             time.clock_settime(time.CLOCK_REALTIME, actual_time - time_to_seconds(get_datetime_changes[1:]))
         else:
             time.clock_settime(time.CLOCK_REALTIME, actual_time + time_to_seconds(get_datetime_changes))
+
     yield
     TimeMachine.time_rollback()
 
     if sys.platform == 'win32':
-        print("Not supported yet")
+        if get_datetime_changes[0] == '-':
+            current_time = datetime.now() + timedelta(seconds=time_to_seconds(get_datetime_changes[1:]))
+        else:
+            current_time = datetime.now() - timedelta(seconds=time_to_seconds(get_datetime_changes))
+
+        win32api.SetSystemTime(int(current_time.year), int(current_time.month), int(current_time.weekday()),
+                               int(current_time.day), int(current_time.hour), int(current_time.minute), 1, 0)
     else:
-        #os.system("timedatectl set-ntp 1")
-        end = time.time()
-        time.clock_settime(time.CLOCK_REALTIME, actual_time + (end-start))
+        time.clock_settime(time.CLOCK_REALTIME, actual_time)
+
+
+@pytest.fixture(scope='module')
+def disable_time_sync(get_datetime_changes):
+    if sys.platform != 'win32':
+        os.system("timedatectl set-ntp 0")
+
+    yield
+    TimeMachine.time_rollback()
+
+    if sys.platform != 'win32':
+        os.system("timedatectl set-ntp 1")
 
 
 @pytest.fixture(scope='module')
