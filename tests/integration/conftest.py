@@ -481,7 +481,7 @@ def change_host_date(get_datetime_changes):
 
 
 @pytest.fixture(scope='module')
-def disable_time_sync(get_datetime_changes):
+def disable_time_sync():
     if sys.platform != 'win32':
         os.system("timedatectl set-ntp 0")
 

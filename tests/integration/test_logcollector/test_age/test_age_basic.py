@@ -23,7 +23,7 @@ configurations_path = os.path.join(test_data_path, 'wazuh_age.yaml')
 WINDOWS_FOLDER_PATH = r'C:\testing_age' + '\\'
 LINUX_FOLDER_PATH = '/tmp/testing_age/'
 
-now_date = datetime.now()
+local_internal_options = {'logcollector.vcheck_files': 1}
 
 if sys.platform == 'win32':
     folder_path = WINDOWS_FOLDER_PATH
@@ -98,8 +98,17 @@ def get_files_list():
     return file_structure
 
 
-def test_configuration_age_basic(get_files_list, create_file_structure, get_configuration,
-                           configure_environment, restart_logcollector):
+@pytest.fixture(scope="module")
+def get_local_internal_options():
+    """Get configurations from the module."""
+    return local_internal_options
+
+
+def test_configuration_age_basic(get_local_internal_options, configure_local_internal_options, get_files_list,
+                                 create_file_structure, get_configuration, configure_environment, restart_logcollector):
+    """
+
+    """
     cfg = get_configuration['metadata']
     age_seconds = time_to_seconds(cfg['age'])
     for file in file_structure:
@@ -130,12 +139,8 @@ def test_configuration_age_basic(get_files_list, create_file_structure, get_conf
                                     error_message='Testing file was not ignored')
 
         else:
-            not_ignored_file = False
-            try:
+            with pytest.raises(TimeoutError):
                 log_callback = logcollector.callback_ignoring_file(
                     f"{file['folder_path']}{file['filename']}", prefix=prefix)
                 wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                         error_message='Testing file was not ignored')
-            except TimeoutError:
-                not_ignored_file = True
-            assert not_ignored_file, f"{file['filename']} have been ignored with smaller modified time than age value"
