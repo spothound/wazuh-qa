@@ -3,6 +3,7 @@
 # This program is free software; you can redistribute it and/or modify it under the terms of GPLv2
 
 import json
+import logging
 import os
 import platform
 import pytest
@@ -155,6 +156,7 @@ def wait_message_line(line):
         line (str): String containing message.
     """
     if "{\"version\"" in line:
+        logging.critical(line)
         return line.split("/ossec/active-response/bin/firewall-drop: ", 1)[1]
     return None
 
