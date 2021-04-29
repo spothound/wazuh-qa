@@ -108,14 +108,9 @@ def test_configuration_age_datetime(new_datetime, get_files_list, get_configurat
             wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                     error_message='Testing file was not ignored')
         else:
-            not_ignored_file = False
-            try:
+            with pytest.raises(TimeoutError):
                 log_callback = logcollector.callback_ignoring_file(
                     f"{file['folder_path']}{file['filename']}", prefix=prefix)
                 wazuh_log_monitor.start(timeout=5, callback=log_callback,
                                         error_message='Testing file was not ignored')
-            except TimeoutError:
-                not_ignored_file = True
-            assert not_ignored_file, f"{file['filename']} have been ignored with smaller modified time than age value"
-
         TimeMachine.time_rollback()
