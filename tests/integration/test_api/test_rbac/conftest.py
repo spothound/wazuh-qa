@@ -26,8 +26,7 @@ def set_security_resources(request):
     # Create new user
     response = requests.post(users_endpoint,
                              json={'username': f'test_user',
-                                   'password': 'Password1!',
-                                   'allow_run_as': False},
+                                   'password': 'Password1!'},
                              headers=api_details['auth_headers'], verify=False)
     assert response.status_code == 200, f'Expected status code was 200. Full response: ' \
                                         f'{response.text}'
