@@ -59,6 +59,8 @@ def get_token_login_api(protocol, host, port, user, password, login_endpoint, ti
 
         if response.status_code == 200:
             return json.loads(response.content.decode())['data']['token']
+        elif response.status_code == 401 or response.status_code == 403:
+            raise RuntimeError(f"Error obtaining login token: {response.json()}")
         time.sleep(1)
     else:
         raise RuntimeError(f"Error obtaining login token: {response.json()}")
