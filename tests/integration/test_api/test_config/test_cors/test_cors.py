@@ -33,6 +33,7 @@ def get_configuration(request):
     ('https://test_url.com', {'cors'}),
     ('http://other_url.com', {'cors'}),
 ])
+@pytest.mark.skip(reason="https://github.com/wazuh/wazuh/issues/8485")
 def test_cors(origin, tags_to_apply, get_configuration, configure_api_environment,
               restart_api, wait_for_start, get_api_details):
     """Check if expected headers are returned when CORS is enabled.
