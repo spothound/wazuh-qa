@@ -234,3 +234,40 @@ def check_if_process_is_running(process_name):
         pass
 
     return is_running
+
+
+def stop_event_log_service():
+    """
+
+    """
+    command = subprocess.run(["sc", 'config', "eventlog", 'start= auto', '/y'], stderr=subprocess.PIPE)
+    result = command.returncode
+    if result != 0:
+        raise ValueError(f"Event log service did not stop correctly")
+
+    command = subprocess.run(["net", 'start', "eventlog", '/y'], stderr=subprocess.PIPE)
+    result = command.returncode
+    if result != 0:
+        raise ValueError(f"Event log service did not stop correctly")
+
+
+
+def stop_event_log_service():
+    """
+
+    """
+    command = subprocess.run(["sc", 'config', "eventlog", 'start= disabled', '/y'], stderr=subprocess.PIPE)
+    result = command.returncode
+    if result != 0:
+        raise ValueError(f"Event log service did not stop correctly")
+
+
+    command = subprocess.run(["net", 'stop', "eventlog", '/y'], stderr=subprocess.PIPE)
+    result = command.returncode
+    if result != 0:
+        raise ValueError(f"Event log service did not stop correctly")
+
+
+
+
+

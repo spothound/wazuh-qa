@@ -7,13 +7,10 @@ from datetime import timedelta, datetime
 
 import sys
 from wazuh_testing.tools.configuration import load_wazuh_configurations
-import win32evtlogutil
-import win32evtlog
 from wazuh_testing import global_parameters, logger
 from wazuh_testing.tools.time import TimeMachine
 import wazuh_testing.logcollector as logcollector
-from wazuh_testing.tools.monitoring import LOG_COLLECTOR_DETECTOR_PREFIX
-
+from wazuh_testing.tools.time import time_to_seconds
 if sys.platform != 'win32':
     pytestmark = [pytest.mark.skip, pytest.mark.tier(level=0)]
 else:
@@ -74,12 +71,18 @@ def test_command_execution_freq(get_local_internal_options, configure_local_inte
 
     services.stop_event_log_service()
 
+    log_callback = logcollector.callback_event_log_service_down(config['location'], config['reconnect_time'])
+    wazuh_log_monitor.start(timeout=global_parameters.default_timeout, callback=log_callback,
+                            error_message=logcollector.GENERIC_CALLBACK_ERROR_ANALYZING_EVENTCHANNEL)
+
     log_callback = logcollector.callback_trying_to_reconnect(config['location'], config['reconnect_time'])
     wazuh_log_monitor.start(timeout=global_parameters.default_timeout, callback=log_callback,
                             error_message=logcollector.GENERIC_CALLBACK_ERROR_ANALYZING_EVENTCHANNEL)
 
+    services.start_event_log_service()
+
     before = str(datetime.now())
-    seconds_to_travel = config['frequency'] / 2
+    seconds_to_travel = time_to_seconds(config['frequency']) / 2
     TimeMachine.travel_to_future(timedelta(seconds=seconds_to_travel))
     logger.debug(f"Changing the system clock from {before} to {datetime.now()}")
 
@@ -87,82 +90,6 @@ def test_command_execution_freq(get_local_internal_options, configure_local_inte
     with pytest.raises(TimeoutError):
         wazuh_log_monitor.start(timeout=global_parameters.default_timeout, callback=log_callback,
                                 error_message=logcollector.GENERIC_CALLBACK_ERROR_COMMAND_MONITORING)
-
-    before = str(datetime.now())
-    TimeMachine.travel_to_future(timedelta(seconds=seconds_to_travel))
-    logger.debug(f"Changing the system clock from {before} to {datetime.now()}")
-
-    wazuh_log_monitor.start(timeout=global_parameters.default_timeout, callback=log_callback,
-                            error_message=logcollector.GENERIC_CALLBACK_ERROR_COMMAND_MONITORING)
-
-"""
- import win32evtlog
- h=win32evtlog.OpenEventLog(None, "Application")
-flags= win32evtlog.EVENTLOG_BACKWARDS_READ|win32evtlog.EVENTLOG_SEQUENTIAL_
- records=win32evtlog.ReadEventLog(h, flags, 0)
- len(records)
- 
- 
- records[0].TimeWritten.Format()    
-
-import win32evtlogutil
-import win32evtlog
-import sys
-
-print("Python {0} on {1}".format(sys.version,sys.platform))
-
-variable = ["x,","y","z"]
-
-
-App_Name = "Python test"
-App_Event_ID = 10001
-App_Event_Category = 90
-App_Event_Type = win32evtlog.EVENTLOG_WARNING_TYPE
-App_Event_Str = ["scanned: {}".format(var) for var in variable]
-App_Event_Data= b"xyz"
-
-'''
-
-win32evtlogutil.ReportEvent(ApplicationName, EventID, EventCategory,EventType,Inserts, Data, SID)
-
-'''
-
-
-win32evtlogutil.ReportEvent(App_Name,App_Event_ID, eventCategory= App_Event_Category,
-                                eventType=win32evtlog.EVENTLOG_INFORMATION_TYPE,
-                                strings=App_Event_Str,data=App_Event_Data)
-"""
-
-
-
-
-def test_command_execution_freq(get_local_internal_options, configure_local_internal_options, get_configuration,
-                                configure_environment, restart_logcollector):
-    """Check if the Wazuh run correctly with the specified command monitoring option "frequency".
-
-    For this purpose, it is verified that the command has not been executed
-    before the period established in this option.
-
-    Args:
-        get_local_internal_options (fixture): Get internal configuration.
-        configure_local_internal_options (fixture): Set internal configuration.
-        get_configuration (fixture): Get configurations from the module.
-        configure_environment (fixture): Configure a custom environment for testing.
-        restart_logcollector (fixture): Reset log file and start a new monitor.
-
-    Raises:
-        TimeoutError: If the command monitoring callback is not generated.
-    """
-
-    before = str(datetime.now())
-    TimeMachine.travel_to_future(timedelta(seconds=seconds_to_travel))
-    logger.debug(f"Changing the system clock from {before} to {datetime.now()}")
-
-    # The command should not be executed in the middle of the command execution cycle.
-    with pytest.raises(TimeoutError):
-        wazuh_log_monitor.start(timeout=global_parameters.default_timeout, callback=log_callback,
-                                error_message=logcollector.GENERIC_CALLBACK_ERROR_COMMAND_MONITORING)
-
 
     before = str(datetime.now())
     TimeMachine.travel_to_future(timedelta(seconds=seconds_to_travel))
