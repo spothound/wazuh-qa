@@ -236,42 +236,28 @@ def check_if_process_is_running(process_name):
     return is_running
 
 
-def start_event_log_service():
-    """
+def control_event_log_service(control):
+    """Control Windows event log service
 
+    Args:
+        control (str): Start or Stop
     """
-    command = subprocess.run("sc config eventlog start= auto", stderr=subprocess.PIPE)
-    result = command.returncode
-    if result != 0:
+    for _ in range(10):
+        control = 'disabled' if control == 'stop' else 'auto'
+
+        command = subprocess.run(f'sc config eventlog start= {control}', stderr=subprocess.PIPE)
+        result = command.returncode
+        if result != 0:
+            raise ValueError(f'Event log service did not stop correctly')
+
+        command = subprocess.run(f"net {control} eventlog /y", stderr=subprocess.PIPE)
+        result = command.returncode
+        if result == 0:
+            break
+        else:
+            time.sleep(1)
+    else:
         raise ValueError(f"Event log service did not stop correctly")
 
-    command = subprocess.run(["net", 'start', "eventlog", '/y'], stderr=subprocess.PIPE)
-    result = command.returncode
-    print(command)
-    if result != 0:
-        raise ValueError(f"Event log service did not stop correctly")
-
-    time.sleep(5)
-
-
-def stop_event_log_service():
-    """
-
-    """
-    command = subprocess.run('sc config eventlog start= disabled', stderr=subprocess.PIPE)
-    result = command.returncode
-    if result != 0:
-        raise ValueError(f"Event log service did not stop correctly")
-
-    command = subprocess.run(["net", 'stop', "eventlog", '/y'], stderr=subprocess.PIPE)
-    result = command.returncode
-    print(command)
-    if result != 0:
-        raise ValueError(f"Event log service did not stop correctly")
-
-    time.sleep(5)
-
-
-
-
+    time.sleep(1)
 
