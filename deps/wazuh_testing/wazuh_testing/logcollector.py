@@ -225,6 +225,7 @@ def callback_event_log_service_down(location, severity='WARNING'):
 
     """
     log_format_message = f"{severity}: The eventlog service is down. Unable to collect logs from '{location}' channel."
+    print(f"{log_format_message}")
     return monitoring.make_callback(pattern=log_format_message, prefix=monitoring.AGENT_DETECTOR_PREFIX)
 
 def callback_trying_to_reconnect(location, reconnect_time):
@@ -232,6 +233,7 @@ def callback_trying_to_reconnect(location, reconnect_time):
 
     """
     log_format_message = f"DEBUG: Trying to reconnect {location} channel in {reconnect_time} seconds."
+    print(f"{log_format_message}")
     return monitoring.make_callback(pattern=log_format_message, prefix=monitoring.AGENT_DETECTOR_PREFIX)
 
 def callback_reconnect_eventchannel(location):
