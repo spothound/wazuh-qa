@@ -243,9 +243,9 @@ def control_event_log_service(control):
         control (str): Start or Stop
     """
     for _ in range(10):
-        control = 'disabled' if control == 'stop' else 'auto'
+        control_sc = 'disabled' if control == 'stop' else 'auto'
 
-        command = subprocess.run(f'sc config eventlog start= {control}', stderr=subprocess.PIPE)
+        command = subprocess.run(f'sc config eventlog start= {control_sc}', stderr=subprocess.PIPE)
         result = command.returncode
         if result != 0:
             raise ValueError(f'Event log service did not stop correctly')
