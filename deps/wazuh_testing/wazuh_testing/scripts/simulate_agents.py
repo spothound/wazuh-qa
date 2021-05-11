@@ -7,7 +7,7 @@ from time import sleep
 import wazuh_testing.tools.agent_simulator as ag
 from wazuh_testing import TCP
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 
 def run_agents(agents_number=1, manager_address='localhost', protocol=TCP, agent_version='v4.0.0',
@@ -31,7 +31,7 @@ def run_agents(agents_number=1, manager_address='localhost', protocol=TCP, agent
     """
 
     logger = logging.getLogger(f"P{os.getpid()}")
-    logger.info(f"Starting {agents_number} agents.")
+    logger.info(f"Starting {agents_number} agents with labels = {labels}.")
 
     active_agents, injectors = [], []
 
@@ -158,7 +158,7 @@ def main():
         for item in args.labels:
             label = item.split(':')
             custom_labels[label[0]] = label[1]
-
+    logging.info(f"CUSTOM LABELS = {custom_labels}")
     # Create the process list
     for i in range(n_processes):
         agents = args.agent_batch

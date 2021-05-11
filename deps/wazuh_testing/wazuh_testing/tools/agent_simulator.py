@@ -620,6 +620,7 @@ class Agent:
             logging.critical("Error creating keep alive for the agent. Check if the OS is in the keepalives.txt")
 
         if self.labels:
+            logging.debug="Enter in self.labels"
             msg_as_list = msg.split('\n')
             for key, value in self.labels.items():
                 msg_as_list.insert(1, f'"{key}":{value}')
