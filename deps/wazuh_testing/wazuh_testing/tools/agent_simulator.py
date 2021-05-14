@@ -1679,6 +1679,7 @@ class InjectorThread(threading.Thread):
                     char_size = getsizeof(event_msg[0]) - getsizeof('')
                     event_msg += 'A' * (dummy_message_size//char_size)
 
+                print(f"EVENT MESSAGE = {event_msg} - {getsizeof(event_msg)}")
                 event = self.agent.create_event(event_msg)
                 self.sender.send_event(event)
                 self.totalMessages += 1
