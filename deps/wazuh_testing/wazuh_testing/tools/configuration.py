@@ -392,8 +392,7 @@ def process_configuration(config, placeholders=None, metadata=None):
     return new_config
 
 
-def load_wazuh_configurations(yaml_file_path: str, test_name: str, params: list = None, metadata: list = None,
-                              tag: str = None) -> Any:
+def load_wazuh_configurations(yaml_file_path: str, test_name: str, params: list = None, metadata: list = None) -> Any:
     """
     Load different configurations of Wazuh from a YAML file.
 
@@ -419,12 +418,10 @@ def load_wazuh_configurations(yaml_file_path: str, test_name: str, params: list 
     if sys.platform == 'darwin':
         configurations = set_correct_prefix(configurations, PREFIX)
 
-    configuration_key = tag if tag is not None else test_name
-
     return [process_configuration(configuration, placeholders=replacement, metadata=meta)
             for replacement, meta in zip(params, metadata)
             for configuration in configurations
-            if test_name in expand_placeholders(configuration.get('configuration_key'), placeholders=replacement)]
+            if test_name in expand_placeholders(configuration.get('apply_to_modules'), placeholders=replacement)]
 
 
 def set_correct_prefix(configurations, new_prefix):

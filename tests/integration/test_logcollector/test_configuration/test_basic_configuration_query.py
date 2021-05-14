@@ -23,7 +23,8 @@ if sys.platform != 'win32' and sys.platform != 'darwin':
     pytestmark = [pytest.mark.skip, pytest.mark.tier(level=0)]
 else:
     pytestmark = [pytest.mark.tier(level=0)]
-    wazuh_configuration = 'test_basic_configuration_query_macos'
+    wazuh_configuration = 'wazuh_basic_configuration_query_macos'
+
     if sys.platform == 'darwin':
         clauses = ['eventMessage', 'processImagePath', 'senderImagePath', 'subsystem', 'category']
         location = log_format = 'oslog'
@@ -53,7 +54,7 @@ else:
                            f'! {clause} IN "testing"',
                            ]
     else:
-        wazuh_configuration = 'test_basic_configuration_query_windows'
+        wazuh_configuration = 'wazuh_basic_configuration_query_windows'
         location = logcollector.WINDOWS_CHANNEL_LIST
         log_format = 'eventchannel'
         query_list = ['Event[System/EventID = 4624]',
@@ -70,7 +71,7 @@ query_list += common_query
 # Configuration
 no_restart_windows_after_configuration_set = True
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
-configurations_path = os.path.join(test_data_path, 'wazuh_basic_configuration.yaml')
+configurations_path = os.path.join(test_data_path, wazuh_configuration)
 
 parameters = []
 for query in query_list:
@@ -87,8 +88,7 @@ metadata = lower_case_key_dictionary_array(parameters)
 
 configurations = load_wazuh_configurations(configurations_path, __name__,
                                            params=parameters,
-                                           metadata=metadata,
-                                           tag=wazuh_configuration)
+                                           metadata=metadata)
 
 configuration_ids = [f"{x['location']}_{x['log_format']}_{x['query']}_{x['level']}_{x['type']}" + f"" if 'level' in x
                      else f"{x['location']}_{x['log_format']}_{x['query']}" for x in metadata]
