@@ -16,6 +16,7 @@ import os
 from Crypto.Cipher import AES, Blowfish
 from Crypto.Util.Padding import pad
 from wazuh_testing.tools import WAZUH_PATH
+from wazuh_testing.tools.monitoring import Queue
 
 
 class Cipher:
@@ -56,7 +57,7 @@ class RemotedSimulator:
     """
 
     def __init__(self, server_address='127.0.0.1', remoted_port=1514, protocol='udp', mode='REJECT',
-                 client_keys=WAZUH_PATH + '/etc/client.keys', start_on_init=True):
+                 client_keys=WAZUH_PATH + '/etc/client.keys', start_on_init=True, rcv_msg_limit=0):
         self.protocol = protocol
         self.global_count = 1234567891
         self.local_count = 5555
@@ -78,6 +79,8 @@ class RemotedSimulator:
         self.active_response_message = None
         self.listener_thread = None
         self.last_client = None
+        self.rcv_msg_queue = Queue(rcv_msg_limit)
+
         if start_on_init:
             self.start()
 
@@ -535,6 +538,9 @@ class RemotedSimulator:
         """
         Process a received message and answer according to the simulator mode
         """
+
+        self.rcv_msg_queue.put(received)
+
         # handle ping pong response
         if received == b'#ping':
             return b'#pong'
