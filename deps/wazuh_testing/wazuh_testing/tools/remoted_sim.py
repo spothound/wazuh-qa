@@ -574,6 +574,7 @@ class RemotedSimulator:
 
         # Decrypt message
         rcv_msg = self.decrypt_message(received, crypto_method)
+        self.rcv_msg_queue.put(rcv_msg)
 
         # Hash message means a response is required
         if rcv_msg.find('#!-') != -1:
