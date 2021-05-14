@@ -16,17 +16,16 @@ query_list = []
 location = log_format = ''
 wazuh_configuration = ''
 
-level_list = [ 'default', 'info', 'debug']
+level_list = ['default', 'info', 'debug']
 type_list = ['log', 'trace', 'activity']
 
 if sys.platform != 'win32' and sys.platform != 'darwin':
     pytestmark = [pytest.mark.skip, pytest.mark.tier(level=0)]
 else:
-    pytestmark = pytest.mark.tier(level=0)
+    pytestmark = [pytest.mark.tier(level=0)]
     wazuh_configuration = 'test_basic_configuration_query_macos'
     if sys.platform == 'darwin':
-        clauses = ['eventMessage', 'processImagePath', 'senderImagePath', 'subsystem', 'category', 'eventType',
-                   'messageType']
+        clauses = ['eventMessage', 'processImagePath', 'senderImagePath', 'subsystem', 'category']
         location = log_format = 'oslog'
         for clause in clauses:
             query_list += [f'{clause} CONTAINS[c] "com.apple.geod"',
@@ -86,9 +85,10 @@ for query in query_list:
 
 metadata = lower_case_key_dictionary_array(parameters)
 
-configurations = load_wazuh_configurations(configurations_path, wazuh_configuration,
+configurations = load_wazuh_configurations(configurations_path, __name__,
                                            params=parameters,
-                                           metadata=metadata)
+                                           metadata=metadata,
+                                           tag=wazuh_configuration)
 
 configuration_ids = [f"{x['location']}_{x['log_format']}_{x['query']}_{x['level']}_{x['type']}" + f"" if 'level' in x
                      else f"{x['location']}_{x['log_format']}_{x['query']}" for x in metadata]
