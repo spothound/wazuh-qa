@@ -23,9 +23,9 @@ if sys.platform != 'win32' and sys.platform != 'darwin':
     pytestmark = [pytest.mark.skip, pytest.mark.tier(level=0)]
 else:
     pytestmark = [pytest.mark.tier(level=0)]
-    wazuh_configuration = 'wazuh_basic_configuration_query_macos'
 
     if sys.platform == 'darwin':
+        wazuh_configuration = 'wazuh_basic_configuration_query_macos.yaml'
         clauses = ['eventMessage', 'processImagePath', 'senderImagePath', 'subsystem', 'category']
         location = log_format = 'oslog'
         for clause in clauses:
@@ -54,7 +54,7 @@ else:
                            f'! {clause} IN "testing"',
                            ]
     else:
-        wazuh_configuration = 'wazuh_basic_configuration_query_windows'
+        wazuh_configuration = 'wazuh_basic_configuration_query_windows.yaml'
         location = logcollector.WINDOWS_CHANNEL_LIST
         log_format = 'eventchannel'
         query_list = ['Event[System/EventID = 4624]',
