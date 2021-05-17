@@ -65,19 +65,19 @@ else:
                       'Event[EventData[Data="value"]]',
                       'Event[ EventData[Data[@Name="PropA"]="ValueA" and  Data[@Name="PropB"]="ValueB" ]]'
                       ]
+    query_list += common_query
 
-        parameters = []
-        for query in query_list:
-            if isinstance(location, list):
-                for channel in location:
-                    parameters.append({'LOCATION': location, 'LOG_FORMAT': log_format, 'QUERY': query})
-            else:
-                for level in level_list:
-                    for type in type_list:
-                        parameters.append({'LOCATION': location, 'LOG_FORMAT': log_format,
-                                           'QUERY': query, 'TYPE': type, 'LEVEL': level})
+    parameters = []
+    for query in query_list:
+        if isinstance(location, list):
+            for channel in location:
+                parameters.append({'LOCATION': location, 'LOG_FORMAT': log_format, 'QUERY': query})
+        else:
+            for level in level_list:
+                for type in type_list:
+                    parameters.append({'LOCATION': location, 'LOG_FORMAT': log_format,
+                                       'QUERY': query, 'TYPE': type, 'LEVEL': level})
 
-        query_list += common_query
 
 # Configuration
 no_restart_windows_after_configuration_set = True
