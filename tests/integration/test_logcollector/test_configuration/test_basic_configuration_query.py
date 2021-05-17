@@ -11,7 +11,7 @@ from wazuh_testing.tools.utils import lower_case_key_dictionary_array
 
 # Marks
 common_query = ['', 'Testing', '!ras*^']
-query_list = []
+query_list = parameters = []
 
 location = log_format = ''
 wazuh_configuration = ''
@@ -66,23 +66,23 @@ else:
                       'Event[ EventData[Data[@Name="PropA"]="ValueA" and  Data[@Name="PropB"]="ValueB" ]]'
                       ]
 
-query_list += common_query
+        parameters = []
+        for query in query_list:
+            if isinstance(location, list):
+                for channel in location:
+                    parameters.append({'LOCATION': location, 'LOG_FORMAT': log_format, 'QUERY': query})
+            else:
+                for level in level_list:
+                    for type in type_list:
+                        parameters.append({'LOCATION': location, 'LOG_FORMAT': log_format,
+                                           'QUERY': query, 'TYPE': type, 'LEVEL': level})
+
+        query_list += common_query
 
 # Configuration
 no_restart_windows_after_configuration_set = True
 test_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 configurations_path = os.path.join(test_data_path, wazuh_configuration)
-
-parameters = []
-for query in query_list:
-    if isinstance(location, list):
-        for channel in location:
-            parameters.append({'LOCATION': location, 'LOG_FORMAT': log_format, 'QUERY': query})
-    else:
-        for level in level_list:
-            for type in type_list:
-                parameters.append({'LOCATION': location, 'LOG_FORMAT': log_format,
-                                   'QUERY': query, 'TYPE': type, 'LEVEL': level})
 
 metadata = lower_case_key_dictionary_array(parameters)
 
