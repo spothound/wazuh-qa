@@ -18,6 +18,7 @@ wazuh_configuration = ''
 
 level_list = ['default', 'info', 'debug']
 type_list = ['log', 'trace', 'activity']
+wazuh_configuration = 'wazuh_basic_configuration_query_macos.yaml'
 
 if sys.platform != 'win32' and sys.platform != 'darwin':
     pytestmark = [pytest.mark.skip, pytest.mark.tier(level=0)]
@@ -25,7 +26,6 @@ else:
     pytestmark = [pytest.mark.tier(level=0)]
 
     if sys.platform == 'darwin':
-        wazuh_configuration = 'wazuh_basic_configuration_query_macos.yaml'
         clauses = ['eventMessage', 'processImagePath', 'senderImagePath', 'subsystem', 'category']
         location = log_format = 'oslog'
         for clause in clauses:

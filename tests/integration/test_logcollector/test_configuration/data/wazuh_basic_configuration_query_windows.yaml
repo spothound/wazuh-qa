@@ -1,8 +1,7 @@
-
 - tags:
-  - test_basic_configuration_reconnect_time
+  - test_basic_configuration_query_macos
   apply_to_modules:
-  - test_basic_configuration_reconnect_time
+  - test_basic_configuration_query
   sections:
   - section: localfile
     elements:
@@ -10,5 +9,5 @@
         value: LOCATION
     - log_format:
          value: LOG_FORMAT
-    - reconnect_time:
-         value: RECONNECT_TIME
+    - query:
+         value: QUERY
