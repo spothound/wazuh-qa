@@ -20,9 +20,8 @@ from wazuh_testing.tools.monitoring import Queue
 
 
 class Cipher:
-    """Algorithm to perform encryption/decryption of manager-agent secure messages
-
-    Ref: https://documentation.wazuh.com/current/development/message-format.html#secure-message-format
+    """Algorithm to perform encryption/decryption of manager-agent secure messages: https://documentation.wazuh.com/curren
+    t/development/message-format.html#secure-message-format
     """
     def __init__(self, data, key):
         self.block_size = 16
@@ -52,9 +51,7 @@ class Cipher:
 
 
 class RemotedSimulator:
-    """
-    Create an AF_INET server socket for simulating remoted connection
-    """
+    """Create an AF_INET server socket for simulating remoted connection"""
 
     def __init__(self, server_address='127.0.0.1', remoted_port=1514, protocol='udp', mode='REJECT',
                  client_keys=WAZUH_PATH + '/etc/client.keys', start_on_init=True, rcv_msg_limit=0):
@@ -85,8 +82,11 @@ class RemotedSimulator:
             self.start()
 
     def start(self, custom_listener=None, args=[]):
-        """
-        Start socket and listener thread
+        """Start socket and listener thread
+
+        Args:
+            custom_listener (thread): Custom listener thread.
+            args (list): Listener thread arguments.
         """
         if not self.running:
             self._start_socket()
@@ -97,6 +97,7 @@ class RemotedSimulator:
             self.listener_thread.start()
 
     def _start_socket(self):
+        """Init remoted simulator socket"""
         if self.protocol == "tcp":
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -110,29 +111,35 @@ class RemotedSimulator:
             self.sock.bind((self.server_address, self.remoted_port))
 
     def set_wcom_message_version(self, version):
-        """
-        Set version for WPK tests
+        """Set version for WPK tests
+
+        Args:
+            version (str): WPK version.
         """
         self.wcom_message_version = version
 
     def set_active_response_message(self, ar_message):
-        """
-        Set message for AR tests
+        """Set message for AR tests
+
+        Args:
+            ar_message (str): Active response message.
         """
         self.active_response_message = ar_message
 
     def stop(self):
-        """
-        Stop socket and listener thread
-        """
+        """Stop socket and listener thread"""
         if self.running:
             self.running = False
             self.listener_thread.join()
             self.sock.close()
 
     def create_encryption_key(self, agent_id, name, key):
-        """
-        Generate encryption key (using agent metadata and key)
+        """Generate encryption key (using agent metadata and key)
+
+        Args:
+            agent_id (str): Agent id.
+            name (str): Agent name.
+            key (str): Encryption key.
         """
         sum1 = (hashlib.md5((hashlib.md5(name.encode()).hexdigest().encode() + hashlib.md5(
             agent_id.encode()).hexdigest().encode())).hexdigest().encode())[:15]
@@ -140,8 +147,11 @@ class RemotedSimulator:
         self.encryption_key = sum2 + sum1
 
     def compose_sec_message(self, message, binary_data=None):
-        """
-        Compose event from raw message
+        """Compose event from raw message
+
+        Args:
+            message (str): Raw message.
+            binary_data(str): Binary data.
         """
         message = message.encode()
         if binary_data:
@@ -157,9 +167,7 @@ class RemotedSimulator:
         return sec_message
 
     def wazuh_padding(self, compressed_sec_message):
-        """
-        Add the Wazuh custom padding to each sec_message sent
-        """
+        """Add the Wazuh custom padding to each sec_message sent"""
         padding = 8
         extra = len(compressed_sec_message) % padding
         if extra > 0:
@@ -535,11 +543,7 @@ class RemotedSimulator:
                 pass
 
     def process_message(self, source, received):
-        """
-        Process a received message and answer according to the simulator mode
-        """
-
-        self.rcv_msg_queue.put(received)
+        """Process a received message and answer according to the simulator mode"""
 
         # handle ping pong response
         if received == b'#ping':
@@ -574,6 +578,7 @@ class RemotedSimulator:
 
         # Decrypt message
         rcv_msg = self.decrypt_message(received, crypto_method)
+        print(rcv_msg)
         self.rcv_msg_queue.put(rcv_msg)
 
         # Hash message means a response is required
@@ -629,10 +634,9 @@ class RemotedSimulator:
                 self.keys[1][ip] = (id, name, ip, key)
 
     def get_key(self, key=None, dictionary="by_id"):
-        """
-        Get an specific key
-        keys can be found in two dictionaries: by_id and by_ip
-        If no key is provided, the first item will be returned.
+        """Get an specific key
+
+        Keys can be found in two dictionaries: by_id and by_ip. If no key is provided, the first item will be returned.
         """
         try:
             if key is None:
@@ -646,23 +650,35 @@ class RemotedSimulator:
             return None
 
     def set_mode(self, mode):
-        """
-        Set Remoted simulator work mode:
+        """Set Remoted simulator work mode:
 
-            -REJECT: Any connection will be rejected. UDP will ignore incoming connection, TCP will actively
+        Args:
+            mode (str): Remoted simulator mode (REJECT,DUMMY_ACK, CONTROLLED_ACK, WRONG_KEY, INVALID_MSG).
+
+
+            REJECT: Any connection will be rejected. UDP will ignore incoming connection, TCP will actively
             close incoming connection.
-            -DUMMY_ACK: Any received package will be answered with an ACK
-            -CONTROLLED_ACK: Received package will be processed and decrypted. Only valid decrypted messages
+
+            DUMMY_ACK: Any received package will be answered with an ACK
+
+            CONTROLLED_ACK: Received package will be processed and decrypted. Only valid decrypted messages
             starting with #!- will receive an ACK
-            -WRONG_KEY: Any received package will be answered with an ACK created with incorrect keys.
-            -INVALID_MSG: Any received package will be answered with a message that is not encrypted and without header.
+
+            WRONG_KEY: Any received package will be answered with an ACK created with incorrect keys.
+
+            INVALID_MSG: Any received package will be answered with a message that is not encrypted and without header.
         """
         self.mode = mode
 
     def wait_upgrade_process(self, timeout=None):
-        """
-        Wait for upgrade process to run
-        timeout: Max timeout in seconds
+        """Wait for upgrade process to run.
+
+        Args:
+            timeout (int): Max timeout in seconds.
+
+        Returns:
+            Boolean: Upgrade success message.
+            String: Request answer.
         """
         while not self.upgrade_success and not self.upgrade_errors and (timeout is None or timeout > 0):
             time.sleep(1)
@@ -671,9 +687,13 @@ class RemotedSimulator:
         return self.upgrade_success, self.request_answer
 
     def wait_upgrade_notification(self, timeout=None):
-        """
-        Wait for the arrival of the agent notification
-        timeout: Max timeout in seconds
+        """Wait for the arrival of the agent notification
+
+        Args:
+            timeout (int): Max timeout in seconds.
+
+        Returns:
+            string: Upgrade notification.
         """
         while (self.upgrade_notification is None) and (timeout is None or timeout > 0):
             time.sleep(1)
@@ -682,9 +702,10 @@ class RemotedSimulator:
         return self.upgrade_notification
 
     def request(self, message):
-        """
-        Send request to agent using current request counter
-        message: Request content
+        """Send request to agent using current request counter
+
+        Args:
+            message (str): Request content.
         """
         if self.last_client:
             request = self.create_sec_message(f'#!-req {self.request_counter} {message}', 'aes')
